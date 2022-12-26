@@ -1,0 +1,57 @@
+bb_program = { SOI ~ bb_block ~ EOI }
+
+bb_block = _{ bb_statement? ~ (bb_nl+ ~ bb_statement)* }
+
+bb_statement = _{ bb_ws* ~ (bb_print_statement | bb_for_statement) }
+
+bb_expression = _{ bb_string_literal | bb_num_expression }
+
+bb_num_expression = _{ bb_float_literal | bb_int_literal }
+
+bb_print_statement = { bb_kw_print ~ bb_ws+ ~bb_expression }
+
+
+
+// Keywords
+bb_kw_print = _{ "PRINT" }
+bb_kw_for   = _{ "FOR" }
+bb_kw_for_to   = _{ "TO" }
+bb_kw_for_next = _{ "NEXT" }
+bb_kw_end = _{ "END" }
+bb_kw_rem = { "REM" }
+
+bb_ws = _{ (" " | "\t") }
+bb_nl = _{ "\n" | "\r\n" }
+
+
+// For-Loop
+bb_for_statement = { bb_for_statement_head ~ bb_nl+
+					 ~ bb_block ~ bb_nl+
+                     ~ bb_for_statement_next ~ bb_nl+
+                     ~ bb_for_statement_end }
+
+bb_for_statement_head = {  bb_kw_for ~ bb_ws+ ~ bb_for_iterator_assignment
+					  ~ bb_ws+ ~ bb_kw_for_to ~ bb_ws+ ~ bb_num_expression  }
+bb_for_statement_next = { bb_ws* ~ bb_kw_for_next ~ bb_ws+ ~ bb_var_name }
+bb_for_statement_end = { bb_ws* ~ bb_kw_end }
+
+bb_for_iterator_assignment = { bb_var_name ~ bb_ws* ~ "=" ~ bb_ws* ~ bb_num_expression }
+
+
+//Variables
+bb_var_name = { ( ASCII_ALPHA | "_" | "`") ~ ( ASCII_ALPHA | ASCII_DIGIT | "_" | "%" | "$" )* }
+
+// Numbers
+bb_number = { ('0'..'9') }
+bb_number_sign = { "+" | "-" }
+// Integer Literal
+bb_int_literal = @{ bb_number_sign? ~ bb_number+ }
+
+// Float Literal
+bb_float_literal = @{ bb_number_sign? ~ bb_number+ ~ "." ~ bb_number+ ~ ("E" ~ bb_number+)? }
+
+// String Literal
+bb_string_literal = _{ "\"" ~ bb_string ~ "\""}
+
+bb_string = @{ bb_string_char+ }
+bb_string_char = { !("\"") ~ ANY}
