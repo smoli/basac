@@ -27,9 +27,19 @@ pub enum BBExpression {
     Float(BbFloat)
 }
 
+pub type BBBlock = Vec<BBStatement>;
+
+pub struct BBAssignment {
+    name: String,
+    value: BBExpression
+}
+
+#[derive(Debug)]
 pub enum BBStatement {
     PRINT(BBExpression),
-    Nop
+    FORLoop(BBAssignment, BBBlock),
+
+    Nop,
 }
 
 
@@ -50,10 +60,17 @@ fn interpret_expression(pairs: Pairs<Rule>) -> Result<BBExpression, InterpreterE
     return Err(InterpreterError::Generic("Empty Expression".to_string()))
 }
 
+fn interpret_for_loop(pair: Pair<Rule>) -> Result<BBStatement, InterpreterError> {
+    Err(InterpreterError::Generic("Not a for loop".to_string()))
+}
+
 fn interpret_statement(pair: Pair<Rule>) -> Result<BBStatement, InterpreterError> {
 
     return match pair.as_rule() {
         Rule::bb_print_statement => Ok(BBStatement::PRINT(interpret_expression(pair.into_inner()).unwrap())),
+
+        Rule::bb_for_statement => interpret_for_loop(pair),
+
         Rule::EOI => Ok(BBStatement::Nop),
 
         _ => Err(InterpreterError::Generic(format!("{:?}", &pair)))
