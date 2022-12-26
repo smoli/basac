@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::fmt::Display;
 use crate::interpreter::{BBAssignment, BBExpression, BBStatement, InterpreterError};
 use crate::interpreter::bb_types::{BbFloat, BbInt};
 
@@ -67,7 +66,7 @@ fn execute_print(statement: &BBStatement, scope: &Scope) -> Result<bool, Interpr
     Ok(true)
 }
 
-fn execute_assignment(assignment: &BBAssignment, mut scope: &mut Scope) -> Result<bool, InterpreterError> {
+fn execute_assignment(assignment: &BBAssignment, scope: &mut Scope) -> Result<bool, InterpreterError> {
     let v = execute_expression(&assignment.value, scope);
 
     match v {

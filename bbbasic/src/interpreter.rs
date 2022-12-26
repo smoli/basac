@@ -1,8 +1,7 @@
 extern crate pest;
 
-use std::arch::x86_64::_mm_pause;
 use pest::iterators::{Pair, Pairs};
-use pest::{Parser, RuleType};
+use pest::{Parser};
 
 pub mod bb_types;
 
@@ -167,7 +166,7 @@ fn interpret_statements(pairs: Pairs<Rule>) -> Result<Vec<BBStatement>, Interpre
         // println!("{:?}", pair);
         match interpret_statement(pair) {
             Ok(s) => r.push(s),
-            Err(e) => {}
+            Err(_) => {}
         }
     }
 
