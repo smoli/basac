@@ -2,93 +2,14 @@ extern crate pest;
 #[macro_use]
 extern crate pest_derive;
 
-use pest::iterators::{Pair, Pairs};
-use pest::Parser;
-use crate::BBStatement::Nop;
+pub mod interpreter;
 
-type bb_float = f64;
-type bb_int = i64;
-
-
-#[derive(Parser)]
-#[grammar="bbbasic.pest"]
-pub struct BBasicParser;
+use interpreter::BBStatement;
+use interpreter::interpret;
+use interpreter::BBExpression;
 
 
-#[derive(Debug)]
-enum InterpreterError {
-    Generic(String),
 
-}
-
-enum BBExpression {
-    String(String),
-    Integer(bb_int),
-    Float(bb_float)
-}
-
-enum BBStatement {
-    PRINT(BBExpression),
-    Nop
-}
-
-fn interpret_expression(pairs: Pairs<Rule>) -> Result<BBExpression, InterpreterError> {
-    for p in pairs {
-        return match p.as_rule() {
-            Rule::bb_float_literal => Ok(BBExpression::Float(p.as_str().parse::<bb_float>().unwrap())),
-            Rule::bb_int_literal => Ok(BBExpression::Integer(p.as_str().parse::<bb_int>().unwrap())),
-            Rule::bb_string => Ok(BBExpression::String(p.as_str().to_string())),
-
-            _ => {
-                println!("{:?}", p);
-                Err(InterpreterError::Generic("What do I know".to_string()))
-            }
-        }
-    }
-
-    return Err(InterpreterError::Generic("Empty Expression".to_string()))
-}
-
-fn interpret_statement(pair: Pair<Rule>) -> Result<BBStatement, InterpreterError> {
-
-    return match pair.as_rule() {
-        Rule::bb_print_statement => Ok(BBStatement::PRINT(interpret_expression(pair.into_inner()).unwrap())),
-        Rule::EOI => Ok(Nop),
-
-        _ => Err(InterpreterError::Generic(format!("{:?}", &pair)))
-    }
-}
-
-fn interpret_statements(pairs: Pairs<Rule>) -> Result<Vec<BBStatement>, InterpreterError> {
-    let mut r: Vec<BBStatement> = Vec::new();
-
-    for pair in pairs {
-        match interpret_statement(pair) {
-            Ok(s) => r.push(s),
-            Err(e) => return Err(e)
-        }
-    }
-
-    Ok(r)
-}
-
-fn interpret_program(pair: Pair<Rule>) -> Result<Vec<BBStatement>, InterpreterError> {
-    match pair.as_rule() {
-        Rule::bb_program => interpret_statements(pair.into_inner()),
-        _ => Err(InterpreterError::Generic(format!("{:?}", &pair)))
-    }
-}
-
-fn interpret(parse: Pairs<Rule>) {
-
-    for t in parse {
-        match interpret_program(t) {
-            Ok(s) => run(&s),
-            Err(e) => {}
-        }
-    }
-
-}
 
 fn run(statements: &Vec<BBStatement>) {
 
@@ -101,18 +22,19 @@ fn run(statements: &Vec<BBStatement>) {
                     BBExpression::Float(f) => println!("{f}")
                 }
             }
-            Nop => {}
+            BBStatement::Nop => {}
         }
     }
 }
 
 
 fn main() {
-    let parse = BBasicParser::parse(Rule::bb_program, "PRINT \"Hello, World!\"");
 
-    match parse {
-        Ok(res) => interpret(res),
-        Err(e) => println!("{e}")
+    let res = interpret("PRINT 12");
+
+    match res {
+        Ok(statements) => run(&statements),
+        Err(e) => println!("{:?}", e)
     }
 }
 
