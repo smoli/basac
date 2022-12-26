@@ -9,7 +9,8 @@ bb_statement = _{ bb_ws* ~
                    bb_next_statement |
                    bb_end_statement |
                    bb_rem_statement |
-                   bb_goto_statement
+                   bb_goto_statement |
+                   bb_assignment
                   )?
                 }
 
@@ -51,6 +52,9 @@ bb_for_iterator_assignment = { bb_var_name ~ bb_ws* ~ "=" ~ bb_ws* ~ bb_num_expr
 
 //Variables
 bb_var_name = { ( ASCII_ALPHA | "_" | "`") ~ ( ASCII_ALPHA | ASCII_DIGIT | "_" | "%" | "$" )* }
+
+// Assignment
+bb_assignment = { bb_var_name ~ bb_ws* ~ "=" ~ bb_ws* ~ bb_expression }
 
 // Numbers
 bb_number = { ('0'..'9') }

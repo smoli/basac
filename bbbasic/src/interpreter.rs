@@ -18,7 +18,8 @@ pub struct BBasicParser;
 #[derive(Debug)]
 pub enum InterpreterError {
     Generic(String),
-    Syntax
+    Syntax,
+    UnknownVariable(String)
 
 }
 
@@ -27,14 +28,26 @@ pub enum BBExpression {
     String(String),
     Integer(BbInt),
     Float(BbFloat),
+    Variable(String)
+}
+
+impl Clone for BBExpression {
+    fn clone(&self) -> Self {
+        match self {
+            BBExpression::String(s) => BBExpression::String(s.clone()),
+            BBExpression::Integer(i) => BBExpression::Integer(*i),
+            BBExpression::Float(f) => BBExpression::Float(*f),
+            BBExpression::Variable(v) => BBExpression::String(v.clone())
+        }
+    }
 }
 
 pub type BBBlock = Vec<BBStatement>;
 
 #[derive(Debug)]
 pub struct BBAssignment {
-    name: String,
-    value: BBExpression,
+    pub name: String,
+    pub value: BBExpression,
 }
 
 
@@ -49,6 +62,7 @@ pub enum BBStatement {
     PRINT(BBExpression),
     FOR(BBAssignment, BBExpression),
     NEXT(String),
+    ASSIGNMENT(BBAssignment),
     END,
 
     Nop,
@@ -56,6 +70,11 @@ pub enum BBStatement {
 
 
 fn interpret_expression(pair: Pair<Rule>) -> Result<BBExpression, InterpreterError> {
+
+    if Rule::bb_var_name == pair.as_rule() {
+        return Ok(BBExpression::Variable(pair.as_str().to_string()))
+    }
+
     for p in pair.into_inner() {
         return match p.as_rule() {
             Rule::bb_float_literal => Ok(BBExpression::Float(p.as_str().parse::<BbFloat>().unwrap())),
@@ -130,6 +149,11 @@ fn interpret_statement(pair: Pair<Rule>) -> Result<BBStatement, InterpreterError
 
         Rule::bb_end_statement => Ok(BBStatement::END),
 
+        Rule::bb_assignment => match interpret_assignment(pair) {
+            Ok(a) => Ok(BBStatement::ASSIGNMENT(a)),
+            Err(e) => Err(e)
+        }
+
         Rule::EOI => Ok(BBStatement::Nop),
 
         _ => Err(InterpreterError::Generic(format!("{:?}", &pair)))
@@ -140,7 +164,7 @@ fn interpret_statements(pairs: Pairs<Rule>) -> Result<Vec<BBStatement>, Interpre
     let mut r: Vec<BBStatement> = Vec::new();
 
     for pair in pairs {
-        println!("{:?}", pair);
+        // println!("{:?}", pair);
         match interpret_statement(pair) {
             Ok(s) => r.push(s),
             Err(e) => {}
@@ -161,8 +185,8 @@ pub fn interpret(input: &str) -> Result<Vec<BBStatement>, InterpreterError> {
 
     let r = BBasicParser::parse(Rule::bb_program, input);
 
-    println!("Interpreting");
-    println!("{}", input);
+    // println!("Interpreting");
+    // println!("{}", input);
 
     match r {
         Ok(r) => {
