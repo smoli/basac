@@ -6,6 +6,10 @@ use pest::iterators::{Pair, Pairs};
 use pest::Parser;
 use crate::BBStatement::Nop;
 
+type bb_float = f64;
+type bb_int = i64;
+
+
 #[derive(Parser)]
 #[grammar="bbbasic.pest"]
 pub struct BBasicParser;
@@ -19,8 +23,8 @@ enum InterpreterError {
 
 enum BBExpression {
     String(String),
-    Integer(i64),
-    Float(f64)
+    Integer(bb_int),
+    Float(bb_float)
 }
 
 enum BBStatement {
@@ -31,8 +35,8 @@ enum BBStatement {
 fn interpret_expression(pairs: Pairs<Rule>) -> Result<BBExpression, InterpreterError> {
     for p in pairs {
         return match p.as_rule() {
-            Rule::bb_float_literal => Ok(BBExpression::Float(p.as_str().parse::<f64>().unwrap())),
-            Rule::bb_int_literal => Ok(BBExpression::Integer(p.as_str().parse::<i64>().unwrap())),
+            Rule::bb_float_literal => Ok(BBExpression::Float(p.as_str().parse::<bb_float>().unwrap())),
+            Rule::bb_int_literal => Ok(BBExpression::Integer(p.as_str().parse::<bb_int>().unwrap())),
             Rule::bb_string => Ok(BBExpression::String(p.as_str().to_string())),
 
             _ => {
