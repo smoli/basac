@@ -2,14 +2,22 @@ bb_program = { SOI ~ bb_block ~ EOI }
 
 bb_block = _{ bb_statement? ~ (bb_nl+ ~ bb_statement)* }
 
-bb_statement = _{ bb_ws* ~ (bb_print_statement | bb_for_statement) }
+bb_statement = _{ bb_ws* ~
+                  (
+                   bb_print_statement |
+                   bb_for_statement   |
+                   bb_next_statement |
+                   bb_end_statement |
+                   bb_rem_statement |
+                   bb_goto_statement
+                  )?
+                }
 
-bb_expression = _{ bb_string_literal | bb_num_expression }
+bb_expression = _{ bb_string | bb_num_expression | bb_var_name }
 
-bb_num_expression = _{ bb_float_literal | bb_int_literal }
+bb_num_expression = { bb_float_literal | bb_int_literal }
 
 bb_print_statement = { bb_kw_print ~ bb_ws+ ~bb_expression }
-
 
 
 // Keywords
@@ -18,22 +26,25 @@ bb_kw_for   = _{ "FOR" }
 bb_kw_for_to   = _{ "TO" }
 bb_kw_for_next = _{ "NEXT" }
 bb_kw_end = _{ "END" }
-bb_kw_rem = { "REM" }
+bb_kw_rem = _{ "REM" }
+bb_kw_goto = _ { "GOTO" }
 
 bb_ws = _{ (" " | "\t") }
-bb_nl = _{ "\n" | "\r\n" }
+bb_nl = _{ NEWLINE | (bb_ws+ ~ ":" ~ bb_ws+) }
 
+
+// REM
+bb_any_char = @{ (!NEWLINE ~ ANY)* }
+bb_rem_statement = { bb_kw_rem ~ bb_any_char }
+
+// GOTO
+bb_goto_statement = { bb_kw_goto ~ bb_ws* ~ bb_int_literal }
 
 // For-Loop
-bb_for_statement = { bb_for_statement_head ~ bb_nl+
-					 ~ bb_block ~ bb_nl+
-                     ~ bb_for_statement_next ~ bb_nl+
-                     ~ bb_for_statement_end }
-
-bb_for_statement_head = {  bb_kw_for ~ bb_ws+ ~ bb_for_iterator_assignment
+bb_for_statement = {  bb_kw_for ~ bb_ws+ ~ bb_for_iterator_assignment
 					  ~ bb_ws+ ~ bb_kw_for_to ~ bb_ws+ ~ bb_num_expression  }
-bb_for_statement_next = { bb_ws* ~ bb_kw_for_next ~ bb_ws+ ~ bb_var_name }
-bb_for_statement_end = { bb_ws* ~ bb_kw_end }
+bb_next_statement = { bb_ws* ~ bb_kw_for_next ~ bb_ws+ ~ bb_var_name }
+bb_end_statement = { bb_ws* ~ bb_kw_end }
 
 bb_for_iterator_assignment = { bb_var_name ~ bb_ws* ~ "=" ~ bb_ws* ~ bb_num_expression }
 
@@ -51,7 +62,7 @@ bb_int_literal = @{ bb_number_sign? ~ bb_number+ }
 bb_float_literal = @{ bb_number_sign? ~ bb_number+ ~ "." ~ bb_number+ ~ ("E" ~ bb_number+)? }
 
 // String Literal
-bb_string_literal = _{ "\"" ~ bb_string ~ "\""}
+bb_string = _{ "\"" ~ bb_string_literal ~ "\""}
 
-bb_string = @{ bb_string_char+ }
+bb_string_literal = @{ bb_string_char+ }
 bb_string_char = { !("\"") ~ ANY}
