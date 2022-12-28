@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io::Write;
 use crate::interpreter::{BBAssignment, BBExpression, BBStatement, InterpreterError};
 use crate::interpreter::bb_types::{BbFloat, BbInt};
 
@@ -66,7 +67,7 @@ impl Scope {
         self.values.insert(name, value);
     }
 
-    fn update_inner_for_loop(&mut self, pc: usize) -> Result<PCOffset, InterpreterError>{
+    fn update_inner_for_loop(&mut self, pc: usize) -> Result<PCOffset, InterpreterError> {
         let my_loop = self.loops.last();
 
         return match my_loop {
@@ -107,7 +108,7 @@ impl Scope {
                     }
                 }
             }
-        }
+        };
     }
 }
 
@@ -124,16 +125,19 @@ fn execute_expression(expression: &BBExpression, scope: &Scope) -> Result<Expres
     }
 }
 
-fn execute_print(statement: &BBStatement, scope: &Scope) -> Result<PCOffset, InterpreterError> {
+fn execute_print(statement: &BBStatement, scope: &Scope, stdout: &mut impl Write) -> Result<PCOffset, InterpreterError> {
     if let BBStatement::PRINT(e) = statement {
-        match execute_expression(e, scope) {
-            Ok(r) => match r {
-                ExpressionResult::String(s) => println!("{}", s),
-                ExpressionResult::Integer(i) => println!("{}", i),
-                ExpressionResult::Float(f) => println!("{}", f)
+        match execute_expression(e, scope)? {
+            ExpressionResult::String(s) => {
+                let _ = stdout.write_all(s.as_bytes());
             }
-            Err(_) => {}
-        }
+            ExpressionResult::Integer(i) => {
+                let _ = stdout.write_all(format!("{}\n", i).as_bytes());
+            }
+            ExpressionResult::Float(f) => {
+                let _ = stdout.write_all(format!("{}\n", f).as_bytes());
+            }
+        };
     }
 
     Ok(1)
@@ -171,7 +175,7 @@ fn execute_next(pc: usize, _next_statement: &BBStatement, scope: &mut Scope) -> 
 }
 
 
-pub fn execute(statements: &Vec<BBStatement>) {
+pub fn execute(statements: &Vec<BBStatement>, stdout: &mut impl Write) {
     let mut scope = Scope::new();
 
     let mut pc: usize = 0;
@@ -179,7 +183,7 @@ pub fn execute(statements: &Vec<BBStatement>) {
     while pc < statements.len() {
         let r = statements.get(pc).unwrap();
         let jmp = match r {
-            BBStatement::PRINT(_) => execute_print(&r, &scope),
+            BBStatement::PRINT(_) => execute_print(&r, &scope, stdout),
             BBStatement::ASSIGNMENT(a) => execute_assignment(&a, &mut scope),
             BBStatement::FOR(_, _) => execute_for(pc, &r, &mut scope),
             BBStatement::NEXT(_) => execute_next(pc, &r, &mut scope),
@@ -191,10 +195,10 @@ pub fn execute(statements: &Vec<BBStatement>) {
             Ok(dst) => {
                 let next = pc as PCOffset + dst;
                 if next < 0 {
-                    panic!("Panic!")
+                    panic!("This should not happen! PC < 0")
                 }
                 pc = next as usize;
-            },
+            }
             Err(_) => panic!("PANIC!") // TODO
         }
     }

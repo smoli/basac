@@ -14,7 +14,7 @@ use executor::execute;
 fn main() {
 
     let inp =
-"FOR i = 1 TO 10
+"FOR i = 1 TO 100
 FOR j = 1 TO 3
 PRINT i
 PRINT j
@@ -24,7 +24,7 @@ PRINT 12";
 
     let res = interpret(inp).unwrap();
 
-    execute(&res);
+    execute(&res, &mut std::io::stdout());
 }
 
 
