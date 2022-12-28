@@ -61,7 +61,7 @@ pub enum BBNumeric {
 #[derive(Debug)]
 pub enum BBStatement {
     PRINT(BBExpression),
-    FOR(BBAssignment, BBExpression),
+    FOR(BBAssignment, BBExpression, BBExpression),
     NEXT(String),
     ASSIGNMENT(BBAssignment),
     END,
@@ -117,9 +117,17 @@ fn interpret_for_statement(pair: Pair<Rule>) -> Result<BBStatement, InterpreterE
 
         let b = pairs.next().unwrap();
 
+        let s = pairs.next();
+
+        let step = match s {
+            Some(i) => interpret_expression(i)?,
+            None => BBExpression::Integer(1)
+        };
+
         return Ok(BBStatement::FOR(
             interpret_assignment(a).unwrap(),
-            interpret_expression(b).unwrap()
+            interpret_expression(b).unwrap(),
+            step
         ))
     }
 

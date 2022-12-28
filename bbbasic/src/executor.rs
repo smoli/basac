@@ -124,6 +124,19 @@ fn execute_expression(expression: &BBExpression, scope: &Scope) -> Result<Expres
     }
 }
 
+
+fn expression_to_numeric(expression: &BBExpression, scope: &mut Scope) -> Result<Numeric, InterpreterError> {
+    let target_result = execute_expression(expression, scope)?;
+
+    let target_value = match target_result {
+        ExpressionResult::String(_) => return Err(InterpreterError::TypeMismatch),
+        ExpressionResult::Integer(i) => Numeric::Integer(i),
+        ExpressionResult::Float(f) => Numeric::Float(f)
+    };
+
+    Ok(target_value)
+}
+
 fn execute_print(statement: &BBStatement, scope: &Scope, stdout: &mut impl Write) -> Result<PCOffset, InterpreterError> {
     if let BBStatement::PRINT(e) = statement {
         match execute_expression(e, scope)? {
@@ -151,18 +164,13 @@ fn execute_assignment(assignment: &BBAssignment, scope: &mut Scope) -> Result<PC
 }
 
 fn execute_for(pc: usize, for_statement: &BBStatement, scope: &mut Scope) -> Result<PCOffset, InterpreterError> {
-    if let BBStatement::FOR(a, target) = for_statement {
+    if let BBStatement::FOR(a, target, step) = for_statement {
         let _ = execute_assignment(a, scope)?;
 
-        let target_result = execute_expression(target, scope)?;
+        let target_value = expression_to_numeric(target, scope)?;
+        let step_value = expression_to_numeric(step, scope)?;
 
-        let target_value = match target_result {
-            ExpressionResult::String(_) => return Err(InterpreterError::TypeMismatch),
-            ExpressionResult::Integer(i) => Numeric::Integer(i),
-            ExpressionResult::Float(f) => Numeric::Float(f)
-        };
-
-        scope.loops.push(Loop::For(a.name.clone(), target_value, Numeric::Integer(1), pc));
+        scope.loops.push(Loop::For(a.name.clone(), target_value, step_value, pc));
 
         return Ok(1);
     }
@@ -185,7 +193,7 @@ pub fn execute(statements: &Vec<BBStatement>, stdout: &mut impl Write) {
         let jmp = match r {
             BBStatement::PRINT(_) => execute_print(&r, &scope, stdout),
             BBStatement::ASSIGNMENT(a) => execute_assignment(&a, &mut scope),
-            BBStatement::FOR(_, _) => execute_for(pc, &r, &mut scope),
+            BBStatement::FOR(_, _, _) => execute_for(pc, &r, &mut scope),
             BBStatement::NEXT(_) => execute_next(pc, &r, &mut scope),
 
             _ => Ok(1)
