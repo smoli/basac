@@ -14,9 +14,13 @@ use executor::execute;
 fn main() {
 
     let inp =
-"FOR i = 1 TO 10\n
-PRINT i\n
-NEXT i\n";
+"FOR i = 1 TO 10
+FOR j = 1 TO 3
+PRINT i
+PRINT j
+NEXT j
+NEXT i
+PRINT 12";
 
     let res = interpret(inp).unwrap();
 

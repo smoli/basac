@@ -87,6 +87,7 @@ impl Scope {
                                 let curr = i + (step.as_float().round() as BbInt);
                                 self.values.insert(name.clone(), ExpressionResult::Integer(curr));
                                 if curr > target.as_int() {
+                                    self.loops.pop();
                                     return Ok(1);
                                 }
                             }
@@ -94,6 +95,7 @@ impl Scope {
                                 let curr = i + step.as_float();
                                 self.values.insert(name.clone(), ExpressionResult::Float(curr));
                                 if curr > target.as_float() {
+                                    self.loops.pop();
                                     return Ok(1);
                                 }
                             }
