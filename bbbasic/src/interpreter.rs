@@ -1,7 +1,7 @@
 extern crate pest;
 
 use pest::iterators::{Pair, Pairs};
-use pest::{Parser};
+use pest::{Parser, RuleType};
 
 pub mod bb_types;
 
@@ -70,17 +70,21 @@ pub enum BBStatement {
 }
 
 
+fn print_pair(pref: &str, pair: &Pair<Rule>) {
+
+    println!("{} {:#?}", pref, pair);
+
+}
+
 fn interpret_expression(pair: Pair<Rule>) -> Result<BBExpression, InterpreterError> {
+    let inner = pair.into_inner();
 
-    if Rule::bb_var_name == pair.as_rule() {
-        return Ok(BBExpression::Variable(pair.as_str().to_string()))
-    }
-
-    for p in pair.into_inner() {
+    for p in inner {
         return match p.as_rule() {
-            Rule::bb_float_literal => Ok(BBExpression::Float(p.as_str().parse::<BbFloat>().unwrap())),
+            Rule::bb_var_name => Ok(BBExpression::Variable(p.as_str().to_string())),
             Rule::bb_int_literal => Ok(BBExpression::Integer(p.as_str().parse::<BbInt>().unwrap())),
-            Rule::bb_string => Ok(BBExpression::String(p.as_str().to_string())),
+            Rule::bb_float_literal => Ok(BBExpression::Float(p.as_str().parse::<BbFloat>().unwrap())),
+            Rule::bb_string_literal => Ok(BBExpression::String(p.as_str().to_string())),
 
             _ => {
                 println!("ERROR on Expression {:?}", p);
@@ -94,10 +98,14 @@ fn interpret_expression(pair: Pair<Rule>) -> Result<BBExpression, InterpreterErr
 
 
 fn interpret_assignment(pair: Pair<Rule>) -> Result<BBAssignment, InterpreterError> {
+    print_pair("ASSI", &pair);
     let mut pairs = pair.into_inner();
 
     let var_name = pairs.next().unwrap();
-    let value = interpret_expression(pairs.next().unwrap());
+
+    let v_pair = pairs.next().unwrap();
+    print_pair("VALUE", &v_pair);
+    let value = interpret_expression(v_pair);
 
     return match value {
         Ok(e) => Ok(BBAssignment { name: var_name.as_str().to_string(), value: e }),

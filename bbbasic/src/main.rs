@@ -4,11 +4,9 @@ extern crate pest_derive;
 extern crate core;
 
 pub mod interpreter;
-
-use interpreter::interpret;
-
 pub mod executor;
 
+use interpreter::interpret;
 use executor::execute;
 
 fn main() {
@@ -28,12 +26,38 @@ PRINT 12";
 }
 
 
-/*
-  Tests:
-  FOR `=1.4 TO 3.2
-PRINT "S";`
-NEXT `
-END
- yields S1.4 S2.4
 
- */
+#[cfg(test)]
+mod test {
+
+    use super::*;
+
+    #[test]
+    fn prints_integers() {
+        let inp = "PRINT 12";
+
+        let res = interpret(inp).unwrap();
+
+        execute(&res, &mut std::io::stdout());
+    }
+
+    #[test]
+    fn prints_strings() {
+        let inp = "PRINT \"Hello, World!\"";
+        // let inp = "PRINT 12";
+
+        let res = interpret(inp).unwrap();
+
+        execute(&res, &mut std::io::stdout());
+    }
+
+    #[test]
+    fn for_loops() {
+        let inp = "FOR i = 1 TO 10
+        PRINT i
+        NEXT i";
+        let res = interpret(inp).unwrap();
+
+        execute(&res, &mut std::io::stdout());
+    }
+}

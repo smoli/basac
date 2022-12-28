@@ -14,7 +14,7 @@ bb_statement = _{ bb_ws* ~
                   )?
                 }
 
-bb_expression = _{ bb_string | bb_num_expression | bb_var_name }
+bb_expression = { bb_string | bb_float_literal | bb_int_literal | bb_var_name }
 
 bb_num_expression = { bb_float_literal | bb_int_literal }
 
