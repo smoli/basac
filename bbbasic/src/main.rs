@@ -1,6 +1,7 @@
 extern crate pest;
 #[macro_use]
 extern crate pest_derive;
+extern crate core;
 
 pub mod interpreter;
 
@@ -13,10 +14,9 @@ use executor::execute;
 fn main() {
 
     let inp =
-"b = 12
-a = 13
-PRINT b
-PRINT a";
+"FOR i = 1 TO 10\n
+PRINT i\n
+NEXT i\n";
 
     let res = interpret(inp).unwrap();
 

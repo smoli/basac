@@ -18,6 +18,8 @@ pub struct BBasicParser;
 pub enum InterpreterError {
     Generic(String),
     Syntax,
+    TypeMismatch,
+    NotInForLoop,
     UnknownVariable(String)
 
 }
@@ -163,7 +165,6 @@ fn interpret_statements(pairs: Pairs<Rule>) -> Result<Vec<BBStatement>, Interpre
     let mut r: Vec<BBStatement> = Vec::new();
 
     for pair in pairs {
-        // println!("{:?}", pair);
         match interpret_statement(pair) {
             Ok(s) => r.push(s),
             Err(_) => {}
@@ -183,9 +184,6 @@ pub fn interpret_program(pair: Pair<Rule>) -> Result<Vec<BBStatement>, Interpret
 pub fn interpret(input: &str) -> Result<Vec<BBStatement>, InterpreterError> {
 
     let r = BBasicParser::parse(Rule::bb_program, input);
-
-    // println!("Interpreting");
-    // println!("{}", input);
 
     match r {
         Ok(r) => {

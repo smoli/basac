@@ -34,6 +34,9 @@ bb_ws = _{ (" " | "\t") }
 bb_nl = _{ NEWLINE | (bb_ws+ ~ ":" ~ bb_ws+) }
 
 
+// END
+bb_end_statement = { bb_kw_end }
+
 // REM
 bb_any_char = @{ (!NEWLINE ~ ANY)* }
 bb_rem_statement = { bb_kw_rem ~ bb_any_char }
@@ -45,7 +48,7 @@ bb_goto_statement = { bb_kw_goto ~ bb_ws* ~ bb_int_literal }
 bb_for_statement = {  bb_kw_for ~ bb_ws+ ~ bb_for_iterator_assignment
 					  ~ bb_ws+ ~ bb_kw_for_to ~ bb_ws+ ~ bb_num_expression  }
 bb_next_statement = { bb_ws* ~ bb_kw_for_next ~ bb_ws+ ~ bb_var_name }
-bb_end_statement = { bb_ws* ~ bb_kw_end }
+
 
 bb_for_iterator_assignment = { bb_var_name ~ bb_ws* ~ "=" ~ bb_ws* ~ bb_num_expression }
 
