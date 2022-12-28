@@ -66,7 +66,7 @@ impl Scope {
         self.values.insert(name, value);
     }
 
-    fn update_inner_loop(&mut self, pc: usize) -> Result<PCOffset, InterpreterError>{
+    fn update_inner_for_loop(&mut self, pc: usize) -> Result<PCOffset, InterpreterError>{
         let my_loop = self.loops.last();
 
         return match my_loop {
@@ -167,7 +167,7 @@ fn execute_for(pc: usize, for_statement: &BBStatement, scope: &mut Scope) -> Res
 }
 
 fn execute_next(pc: usize, _next_statement: &BBStatement, scope: &mut Scope) -> Result<PCOffset, InterpreterError> {
-    scope.update_inner_loop(pc)
+    scope.update_inner_for_loop(pc)
 }
 
 
