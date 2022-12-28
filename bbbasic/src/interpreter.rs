@@ -1,7 +1,7 @@
 extern crate pest;
 
 use pest::iterators::{Pair, Pairs};
-use pest::{Parser, RuleType};
+use pest::{Parser};
 
 pub mod bb_types;
 
@@ -69,12 +69,10 @@ pub enum BBStatement {
     Nop,
 }
 
-
-fn print_pair(pref: &str, pair: &Pair<Rule>) {
-
-    println!("{} {:#?}", pref, pair);
-
-}
+//
+// fn print_pair(pref: &str, pair: &Pair<Rule>) {
+//     println!("{} {:#?}", pref, pair);
+// }
 
 fn interpret_expression(pair: Pair<Rule>) -> Result<BBExpression, InterpreterError> {
     let inner = pair.into_inner();
@@ -98,13 +96,11 @@ fn interpret_expression(pair: Pair<Rule>) -> Result<BBExpression, InterpreterErr
 
 
 fn interpret_assignment(pair: Pair<Rule>) -> Result<BBAssignment, InterpreterError> {
-    print_pair("ASSI", &pair);
     let mut pairs = pair.into_inner();
 
     let var_name = pairs.next().unwrap();
 
     let v_pair = pairs.next().unwrap();
-    print_pair("VALUE", &v_pair);
     let value = interpret_expression(v_pair);
 
     return match value {

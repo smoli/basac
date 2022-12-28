@@ -49,14 +49,13 @@ enum Loop {
 }
 
 struct Scope {
-    parent: Option<Box<Scope>>,
     values: HashMap<String, ExpressionResult>,
     loops: Vec<Loop>,
 }
 
 impl Scope {
     fn new() -> Scope {
-        Scope { parent: None, values: HashMap::new(), loops: Vec::new() }
+        Scope { values: HashMap::new(), loops: Vec::new() }
     }
 
     fn get(&self, name: &String) -> Option<&ExpressionResult> {
@@ -130,6 +129,7 @@ fn execute_print(statement: &BBStatement, scope: &Scope, stdout: &mut impl Write
         match execute_expression(e, scope)? {
             ExpressionResult::String(s) => {
                 let _ = stdout.write_all(s.as_bytes());
+                let _ = stdout.write_all("\n".as_bytes());
             }
             ExpressionResult::Integer(i) => {
                 let _ = stdout.write_all(format!("{}\n", i).as_bytes());
