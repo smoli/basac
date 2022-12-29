@@ -61,7 +61,7 @@ pub enum BBNumeric {
 #[derive(Debug)]
 pub enum BBStatement {
     PRINT(BBExpression),
-    FOR(BBAssignment, BBExpression, BBExpression),
+    FOR(BBAssignment, BBExpression, BBExpression, BBBlock),
     NEXT(String),
     ASSIGNMENT(BBAssignment),
     END,
@@ -69,10 +69,10 @@ pub enum BBStatement {
     Nop,
 }
 
-//
-// fn print_pair(pref: &str, pair: &Pair<Rule>) {
-//     println!("{} {:#?}", pref, pair);
-// }
+#[allow(dead_code)]
+fn print_pair(pref: &str, pair: &Pair<Rule>) {
+    println!("{} {:#?}", pref, pair);
+}
 
 fn interpret_expression(pair: Pair<Rule>) -> Result<BBExpression, InterpreterError> {
     let inner = pair.into_inner();
@@ -86,7 +86,8 @@ fn interpret_expression(pair: Pair<Rule>) -> Result<BBExpression, InterpreterErr
 
             _ => {
                 println!("ERROR on Expression {:?}", p);
-                Err(InterpreterError::Generic("What do I know".to_string()))
+                panic!("Bailing out");
+                // Err(InterpreterError::Generic("What do I know".to_string()))
             }
         }
     }
@@ -113,35 +114,33 @@ fn interpret_for_statement(pair: Pair<Rule>) -> Result<BBStatement, InterpreterE
     if Rule::bb_for_statement == pair.as_rule() {
         let mut pairs = pair.into_inner();
 
-        let a = pairs.next().unwrap();
+        let assignment = pairs.next().unwrap();
+        let target_value = pairs.next().unwrap();
+        let step_pair = pairs.next().unwrap();
+        let mut block = pairs.next().unwrap();
+        let next = pairs.next();
 
-        let b = pairs.next().unwrap();
+        let step = match next {
+            None => {
+                block = step_pair;
+                BBExpression::Integer(1)
+            },
 
-        let s = pairs.next();
-
-        let step = match s {
-            Some(i) => interpret_expression(i)?,
-            None => BBExpression::Integer(1)
+            Some(_) => {
+                interpret_expression(step_pair)?
+            }
         };
 
         return Ok(BBStatement::FOR(
-            interpret_assignment(a).unwrap(),
-            interpret_expression(b).unwrap(),
-            step
-        ))
+            interpret_assignment(assignment)?,
+            interpret_expression(target_value)?,
+            step,
+            interpret_block(block)?
+        ));
     }
 
     Err(InterpreterError::Generic("Not a for loop".to_string()))
 }
-
-fn interpret_next_statement(pair: Pair<Rule>) -> Result<BBStatement, InterpreterError> {
-    if Rule::bb_next_statement == pair.as_rule() {
-        return Ok(BBStatement::NEXT(pair.into_inner().next().unwrap().as_str().to_string()));
-    }
-
-    Err(InterpreterError::Syntax)
-}
-
 
 fn interpret_print_statement(pair: Pair<Rule>) -> Result<BBStatement, InterpreterError> {
     if Rule::bb_print_statement == pair.as_rule() {
@@ -158,8 +157,6 @@ fn interpret_statement(pair: Pair<Rule>) -> Result<BBStatement, InterpreterError
 
         Rule::bb_for_statement => interpret_for_statement(pair),
 
-        Rule::bb_next_statement => interpret_next_statement(pair),
-
         Rule::bb_end_statement => Ok(BBStatement::END),
 
         Rule::bb_assignment => match interpret_assignment(pair) {
@@ -171,6 +168,10 @@ fn interpret_statement(pair: Pair<Rule>) -> Result<BBStatement, InterpreterError
 
         _ => Err(InterpreterError::Generic(format!("{:?}", &pair)))
     }
+}
+
+fn interpret_block(pair: Pair<Rule>) -> Result<Vec<BBStatement>, InterpreterError> {
+    interpret_statements(pair.into_inner())
 }
 
 fn interpret_statements(pairs: Pairs<Rule>) -> Result<Vec<BBStatement>, InterpreterError> {

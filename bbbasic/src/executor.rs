@@ -21,6 +21,16 @@ impl Clone for ExpressionResult {
     }
 }
 
+impl ExpressionResult {
+    fn as_float(&self) -> Option<BbFloat> {
+        match self {
+            ExpressionResult::String(_) => None,
+            ExpressionResult::Integer(i) => Some(*i as BbFloat),
+            ExpressionResult::Float(f) => Some(*f)
+        }
+    }
+}
+
 enum Numeric {
     Integer(BbInt),
     Float(BbFloat),
@@ -34,6 +44,7 @@ impl Numeric {
         }
     }
 
+    #[allow(dead_code)]
     fn as_int(&self) -> BbInt {
         match self {
             Numeric::Integer(i) => *i,
@@ -42,20 +53,13 @@ impl Numeric {
     }
 }
 
-
-enum Loop {
-    //  Variable name, Target value, Step, Line of For Statement
-    For(String, Numeric, Numeric, usize)
-}
-
 struct Scope {
-    values: HashMap<String, ExpressionResult>,
-    loops: Vec<Loop>,
+    values: HashMap<String, ExpressionResult>
 }
 
 impl Scope {
     fn new() -> Scope {
-        Scope { values: HashMap::new(), loops: Vec::new() }
+        Scope { values: HashMap::new() }
     }
 
     fn get(&self, name: &String) -> Option<&ExpressionResult> {
@@ -66,7 +70,7 @@ impl Scope {
         self.values.insert(name, value);
     }
 
-    fn update_inner_for_loop(&mut self, pc: usize) -> Result<PCOffset, InterpreterError> {
+    /*fn update_inner_for_loop(&mut self, pc: usize) -> Result<PCOffset, InterpreterError> {
         let my_loop = self.loops.last();
 
         return match my_loop {
@@ -108,7 +112,7 @@ impl Scope {
                 }
             }
         };
-    }
+    }*/
 }
 
 
@@ -159,55 +163,76 @@ fn execute_print(statement: &BBStatement, scope: &Scope, stdout: &mut impl Write
 fn execute_assignment(assignment: &BBAssignment, scope: &mut Scope) -> Result<PCOffset, InterpreterError> {
     let v = execute_expression(&assignment.value, scope)?;
     scope.set(assignment.name.clone(), v);
-
     Ok(1)
 }
 
-fn execute_for(pc: usize, for_statement: &BBStatement, scope: &mut Scope) -> Result<PCOffset, InterpreterError> {
-    if let BBStatement::FOR(a, target, step) = for_statement {
-        let _ = execute_assignment(a, scope)?;
+fn execute_for(pc: usize, for_statement: &BBStatement, scope: &mut Scope, stdout: &mut impl Write) -> Result<PCOffset, InterpreterError> {
+    if let BBStatement::FOR(a, target, step, block) = for_statement {
+        let v = execute_expression(&a.value, scope)?;
 
-        let target_value = expression_to_numeric(target, scope)?;
-        let step_value = expression_to_numeric(step, scope)?;
+        let target_value = expression_to_numeric(target, scope)?.as_float();
+        let step_value = expression_to_numeric(step, scope)?.as_float();
 
-        scope.loops.push(Loop::For(a.name.clone(), target_value, step_value, pc));
+        let mut iterator_value: BbFloat;
 
-        return Ok(1);
+        match v.as_float() {
+            None => return Err(InterpreterError::TypeMismatch),
+            Some(f) => iterator_value = f
+        }
+
+        let mut pc_distance: PCOffset;
+
+        loop {
+            scope.set(a.name.clone(), ExpressionResult::Float(iterator_value));
+
+            pc_distance = execute_block(pc, block, scope, stdout)?;
+
+            iterator_value += step_value;
+
+            if iterator_value > target_value {
+                break;
+            }
+        }
+
+        // +2 for the FOR statement and the NEXT statement
+        return Ok(pc_distance + 2);
     }
 
     return Err(InterpreterError::Generic("NOT a For Loop".to_string()));
 }
 
-fn execute_next(pc: usize, _next_statement: &BBStatement, scope: &mut Scope) -> Result<PCOffset, InterpreterError> {
-    scope.update_inner_for_loop(pc)
-}
+fn execute_block(pc: usize, statements: &Vec<BBStatement>, scope: &mut Scope, stdout: &mut impl Write) -> Result<PCOffset, InterpreterError> {
+    let mut l_pc = 0;
 
-
-pub fn execute(statements: &Vec<BBStatement>, stdout: &mut impl Write) {
-    let mut scope = Scope::new();
-
-    let mut pc: usize = 0;
-
-    while pc < statements.len() {
-        let r = statements.get(pc).unwrap();
+    while l_pc < statements.len() {
+        let r = statements.get(l_pc).unwrap();
         let jmp = match r {
-            BBStatement::PRINT(_) => execute_print(&r, &scope, stdout),
-            BBStatement::ASSIGNMENT(a) => execute_assignment(&a, &mut scope),
-            BBStatement::FOR(_, _, _) => execute_for(pc, &r, &mut scope),
-            BBStatement::NEXT(_) => execute_next(pc, &r, &mut scope),
+            BBStatement::PRINT(_) => execute_print(&r, scope, stdout),
+            BBStatement::ASSIGNMENT(a) => execute_assignment(&a, scope),
+            BBStatement::FOR(_, _, _, _) => execute_for(pc, &r, scope, stdout),
 
             _ => Ok(1)
         };
 
         match jmp {
             Ok(dst) => {
-                let next = pc as PCOffset + dst;
+                let next = l_pc as PCOffset + dst;
                 if next < 0 {
                     panic!("This should not happen! PC < 0")
                 }
-                pc = next as usize;
+                l_pc = next as usize;
             }
             Err(_) => panic!("PANIC!") // TODO
         }
     }
+
+    Ok(l_pc as PCOffset)
+}
+
+pub fn execute(statements: &Vec<BBStatement>, stdout: &mut impl Write) {
+    let mut scope = Scope::new();
+
+    let pc: usize = 0;
+
+    let _ = execute_block(pc, statements, &mut scope, stdout);
 }

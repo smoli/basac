@@ -1,12 +1,13 @@
-bb_program = { SOI ~ bb_block ~ EOI }
+bb_program = { SOI ~ bb_block? ~ bb_statement? ~ EOI }
 
-bb_block = _{ bb_statement? ~ (bb_nl+ ~ bb_statement)* }
+bb_block = _{ (bb_statement ~ bb_nl)* }
+
 
 bb_statement = _{ bb_ws* ~
                   (
-                   bb_print_statement |
                    bb_for_statement   |
-                   bb_next_statement |
+                   bb_if_statement |
+                   bb_print_statement |
                    bb_end_statement |
                    bb_rem_statement |
                    bb_goto_statement |
@@ -27,16 +28,20 @@ bb_kw_for   = _{ "FOR" }
 bb_kw_for_to   = _{ "TO" }
 bb_kw_for_next = _{ "NEXT" }
 bb_kw_for_step = _{ "STEP" }
+bb_kw_endif = _ { "ENDIF" }
 bb_kw_end = _{ "END" }
 bb_kw_rem = _{ "REM" }
 bb_kw_goto = _ { "GOTO" }
+bb_kw_if = _ { "IF" }
+bb_kw_then = _ { "THEN" }
+bb_kw_else = _ { "ELSE" }
+
 
 bb_ws = _{ (" " | "\t") }
-bb_nl = _{ NEWLINE | (bb_ws+ ~ ":" ~ bb_ws+) }
+bb_nl = _{ (NEWLINE | (bb_ws+ ~ ":" ~ bb_ws+))+ }
+bb_nl_ws = _ { bb_ws | bb_nl }
 
 
-// END
-bb_end_statement = { bb_kw_end }
 
 // REM
 bb_any_char = @{ (!NEWLINE ~ ANY)* }
@@ -47,14 +52,33 @@ bb_goto_statement = { bb_kw_goto ~ bb_ws* ~ bb_int_literal }
 
 // For-Loop
 bb_for_step = _{ bb_ws+ ~ bb_kw_for_step ~ bb_ws+ ~ bb_num_expression }
-bb_for_statement = {  bb_kw_for ~ bb_ws+ ~ bb_for_iterator_assignment
-					  ~ bb_ws+ ~ bb_kw_for_to ~ bb_ws+ ~ bb_num_expression ~ bb_for_step? }
-
-bb_next_statement = { bb_ws* ~ bb_kw_for_next ~ bb_ws+ ~ bb_var_name }
-
-
 bb_for_iterator_assignment = { bb_var_name ~ bb_ws* ~ "=" ~ bb_ws* ~ bb_num_expression }
 
+bb_for_block = { bb_block }
+
+bb_for_statement = { bb_kw_for  ~ bb_ws+ ~ bb_for_iterator_assignment
+					 ~ bb_ws+ ~ bb_kw_for_to ~ bb_ws+ ~ bb_num_expression ~ bb_for_step?
+                     ~ bb_nl
+                     ~ bb_nl_ws*
+                     ~ bb_for_block
+                     ~ bb_nl_ws*
+                     ~ bb_ws* ~ bb_kw_for_next ~ ( bb_ws+ ~ bb_var_name )?
+                     }
+
+
+// IF-Statement
+bb_bool_expression = {"BLA" }
+
+bb_then_block = { bb_block }
+
+bb_else_block = { bb_ws* ~ bb_kw_else ~ bb_nl+ ~ bb_block }
+
+bb_if_statement = { bb_kw_if ~ bb_ws+ ~ bb_bool_expression ~ bb_ws+ ~ bb_kw_then
+					~ bb_nl
+                    ~ bb_then_block
+                    ~ bb_else_block?
+                    ~ bb_ws* ~ bb_kw_endif
+                   }
 
 //Variables
 bb_var_name = { ( ASCII_ALPHA | "_" | "`") ~ ( ASCII_ALPHA | ASCII_DIGIT | "_" | "%" | "$" )* }
@@ -77,3 +101,7 @@ bb_string = _{ "\"" ~ bb_string_literal ~ "\""}
 
 bb_string_literal = @{ bb_string_char+ }
 bb_string_char = { !("\"") ~ ANY}
+
+
+// END
+bb_end_statement = { bb_kw_end }
