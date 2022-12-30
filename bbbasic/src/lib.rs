@@ -1,8 +1,3 @@
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
-extern crate core;
-
-
+extern crate peginator;
+pub mod parser;
 pub mod interpreter;
-pub mod executor;

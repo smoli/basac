@@ -1,28 +1,29 @@
-use bbbasic::executor::execute;
-use bbbasic::interpreter::interpret;
+use bbbasic::parser;
+use peginator::PegParser;
+use bbbasic::interpreter::execute;
 
 mod common;
 
 #[test]
-fn prints_integers() {
-    let (mut out, exp) = common::make_buffer("12\n");
-    let inp = "PRINT 12";
+fn print_a_string() {
 
-    let res = interpret(inp).unwrap();
+    let (mut out, exp) = common::make_buffer("Hello, World!");
+    let r = parser::Program::parse("PRINT \"Hello, World!\"").expect("Parse failed");
 
-    execute(&res, &mut out);
+    println!("{:?}", r);
+    execute(r, &mut out);
 
     assert_eq!(out.into_inner(), exp.into_inner())
 }
 
 #[test]
-fn prints_strings() {
-    let (mut out, exp) = common::make_buffer("Hello, World!\n");
-    let inp = "PRINT \"Hello, World!\"";
+fn print_an_integer() {
 
-    let res = interpret(inp).unwrap();
+    let (mut out, exp) = common::make_buffer("12");
+    let r = parser::Program::parse("PRINT 12").expect("Parse failed");
 
-    execute(&res, &mut out);
+    println!("{:?}", r);
+    execute(r, &mut out);
 
-    assert_eq!(out.into_inner(), exp.into_inner());
+    assert_eq!(out.into_inner(), exp.into_inner())
 }

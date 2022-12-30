@@ -1,0 +1,22 @@
+@export
+Program = body:Block;
+
+Block = {statements:Statement};
+
+Statement = @:PrintStatement | @:EndStatement;
+
+
+PrintStatement = KWPrint (literal:IntegerLiteral | literal:StringLiteral);
+EndStatement  = KWEnd;
+
+KWPrint = 'PRINT';
+KWEnd = 'END';
+
+@string
+IntegerLiteral = {'0'..'9'}+;
+
+@no_skip_ws
+StringLiteral = '"' body:StringBody '"';
+
+@string
+StringBody = {!'"' char};
