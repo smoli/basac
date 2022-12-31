@@ -2,6 +2,20 @@ use std::io::Write;
 
 pub type Buffer = std::io::Cursor<Vec<u8>>;
 
+
+pub trait Stringify {
+    fn stringify(&self) -> String;
+}
+
+impl Stringify for Buffer {
+    fn stringify(&self) -> String {
+        match std::str::from_utf8(self.get_ref()) {
+            Ok(s) => format!("{s}"),
+            Err(_) => format!("Not a UTF-8 string")
+        }
+    }
+}
+
 #[allow(dead_code)]
 pub fn make_buffer(expected_value: &str) -> (Buffer, Buffer) {
     let b = expected_value.as_bytes();

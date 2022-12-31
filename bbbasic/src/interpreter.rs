@@ -15,9 +15,7 @@ trait Execute {
 }
 
 impl Execute for PrintStatement {
-
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) {
-
         for i in 0..self.list.len() {
             let item = self.list.get(i).unwrap();
 
@@ -28,23 +26,20 @@ impl Execute for PrintStatement {
                     match v {
                         Ok(v) => match v {
                             Value::String(s) => stdout.write_all(s.as_bytes()).unwrap(),
-                            Value::Integer(i) => stdout.write_all(format!("{}",i).as_bytes()).unwrap(),
-                            Value::Float(f) => stdout.write_all(format!("{}",f).as_bytes()).unwrap(),
-                            Value::Boolean(b) => stdout.write_all(format!("{}",b).as_bytes()).unwrap(),
+                            Value::Integer(i) => stdout.write_all(format!("{}", i).as_bytes()).unwrap(),
+                            Value::Float(f) => stdout.write_all(format!("{}", f).as_bytes()).unwrap(),
+                            Value::Boolean(b) => stdout.write_all(format!("{}", b).as_bytes()).unwrap(),
                         }
                         Err(_) => {}
                     };
                 }
                 PrintListItem_value::StringLiteral(s) => stdout.write_all(s.body.as_bytes()).unwrap()
             }
-        }
 
-        if self.list.len() > 0 {
-
-        }
-        match self.list.last().unwrap().sep {
-            None => stdout.write_all("\n".as_bytes()).unwrap(),
-            Some(_) => {}
+            match item.sep {
+                None => stdout.write_all("\n".as_bytes()).unwrap(),
+                Some(_) => {}
+            }
         }
     }
 }
