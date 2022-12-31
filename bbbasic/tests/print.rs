@@ -123,8 +123,6 @@ fn print_multiple_strings() {
 fn print_multiple_strings_skipped() {
     let (mut out, exp) = common::make_buffer("123\n");
     let r = parser::Program::parse("PRINT \"1\";\"2\";\"3\"\n").expect("Parse failed");
-
-    println!("{:#?}", r);
     r.execute(&mut out);
 
     assert_eq!(out.stringify(), exp.stringify())
@@ -143,9 +141,12 @@ fn print_multiple_types() {
 #[test]
 fn print_a_string_variable() {
     let (mut out, exp) = common::make_buffer("Hello, World!\n");
-    let r = parser::Program::parse("x=\"World\"\nPRINT \"Hello, \";x;\"!\"").expect("Parse failed");
+    let inp =
+"x = \"World\"
+PRINT \"Hello, \";x;\"!\"";
 
-    println!("{:#?}", r);
+    let r = parser::Program::parse(inp).expect("Parse failed");
+
     r.execute(&mut out);
 
     assert_eq!(out.stringify(), exp.stringify());

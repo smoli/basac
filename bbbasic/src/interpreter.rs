@@ -1,6 +1,6 @@
 use std::io::Write;
 use crate::expression::Compute;
-use crate::parser::{Assignment, Assignment_value, Block, PrintListItem_value, PrintStatement, Program, Statement};
+use crate::parser::{Assignment, Assignment_value, Block, ForStatement, ForStep, PrintListItem_value, PrintStatement, Program, Statement};
 
 use crate::scope::Scope;
 use crate::value::Value;
@@ -55,13 +55,49 @@ impl Execute for Assignment {
     }
 }
 
+impl Execute for ForStatement {
+    fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) {
+        self.assignment.execute(scope);
+
+        let step = match &self.step {
+            None => Value::Integer(1),
+            Some(f) => f.value.compute(scope).unwrap()
+        };
+
+        let target = self.target.compute(scope).unwrap();
+
+        loop {
+            if self.iterate(&target, &step, scope, stdout) == false {
+                break
+            }
+        }
+    }
+}
+
+impl ForStatement {
+    fn iterate(&self, target: &Value, step: &Value, scope: &mut Scope, stdout: &mut impl Write) -> bool {
+        self.body.execute_stdout(scope, stdout);
+        let curr = scope.get(&self.assignment.variable.name).unwrap();
+        let next = curr.add(step).unwrap();
+
+        if next.gt(target).unwrap() {
+            return false
+        }
+
+        scope.set(&self.assignment.variable.name, next.clone());
+
+        true
+    }
+}
+
 
 impl Execute for Statement {
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) {
         match self {
             Statement::EndStatement(_) => {}
             Statement::PrintStatement(s) => s.execute_stdout(scope, stdout),
-            Statement::Assignment(a) => a.execute(scope)
+            Statement::Assignment(a) => a.execute(scope),
+            Statement::ForStatement(f) => f.execute_stdout(scope, stdout)
         }
     }
 }

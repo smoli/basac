@@ -19,5 +19,4 @@ impl Scope {
     pub fn get(&self, name: &String) -> Option<&Value> {
         self.values.get(name)
     }
-
 }

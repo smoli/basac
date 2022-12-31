@@ -21,6 +21,25 @@ impl Value {
         }
     }
 
+    pub fn gt(&self, rhs:&Value) -> Result<bool, InterpreterError> {
+        match &self {
+            Value::Integer(i) => match rhs {
+                Value::String(_) => Err(TypeMismatch),
+                Value::Integer(rhs) => Ok(*i > *rhs),
+                Value::Float(rhs) => Ok(*i as f64 > *rhs),
+                Value::Boolean(_) => Err(TypeMismatch)
+            }
+            Value::Float(f) => match rhs {
+                Value::String(_) => Err(TypeMismatch),
+                Value::Integer(rhs) => Ok(*f > *rhs as f64),
+                Value::Float(rhs) => Ok(*f > *rhs),
+                Value::Boolean(_) => Err(TypeMismatch)
+            }
+            Value::String(s) => Err(TypeMismatch),
+            Value::Boolean(_) => Err(TypeMismatch)
+        }
+    }
+
     pub fn add(&self, rhs: &Value) -> Result<Value, InterpreterError> {
         match &self {
             Value::Integer(lhs) => match  rhs{

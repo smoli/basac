@@ -1,9 +1,9 @@
 @export
-Program = body:Block;
+Program = body:Block $;
 
-Block = {statements:Statement NewLine } [statements:Statement];
+Block = {statements:Statement {NewLine} } [statements:Statement];
 
-Statement = ( @:PrintStatement | @:EndStatement | @:Assignment );
+Statement = ( @:ForStatement | @:PrintStatement | @:EndStatement | @:Assignment  );
 
 NewLine = "\n";
 
@@ -32,11 +32,22 @@ PrintSkipNl = ";";
 PrintListItem = (value:Expression | value:StringLiteral) [sep:PrintListSep];
 PrintListSep = ";";
 
+# FOR
+ForStatement = KWFor assignment:Assignment KWTo target:Expression [step:ForStep] NewLine body:Block next:ForNext;
+#ForStatement = KWFor assignment:Assignment KWTo target:Expression;
+ForStep = KWStep value:Expression;
+ForNext = KWNext [Variable];
+
+
 # END
 EndStatement  = KWEnd;
 
 # KEYWORDS
 KWPrint = 'PRINT';
+KWFor = 'FOR';
+KWTo = 'TO';
+KWStep = 'STEP';
+KWNext = 'NEXT';
 KWEnd = 'END';
 
 # Variable
