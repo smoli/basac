@@ -1,5 +1,5 @@
 use crate::error::InterpreterError;
-use crate::parser::{Add, Div, Expression, Factor, Group, IntegerLiteral, Mul, NumberLiteral, NumberLiteral_value, Sub, Term};
+use crate::parser::{Add, Div, Expression, Factor, Group, IntegerLiteral, Mul, NumberLiteral, NumberLiteral_value, Sub, Term, Variable, VariableName};
 use crate::scope::Scope;
 use crate::value::Value;
 
@@ -20,6 +20,15 @@ impl Compute for NumberLiteral {
 impl Compute for IntegerLiteral {
     fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
         Ok(Value::Integer(self.parse().unwrap()))
+    }
+}
+
+impl Compute for Variable {
+    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+        match scope.get(&self.name) {
+            None => Err(InterpreterError::OperationUnsupported),
+            Some(v) => Ok(v.clone())
+        }
     }
 }
 
@@ -53,7 +62,7 @@ impl Compute for Factor {
         match self {
             Factor::Group(g) => g.ausrechnen(scope),
             Factor::NumberLiteral(n) => n.ausrechnen(scope),
-            Factor::VariableName(v) => v.ausrechnen(scope)
+            Factor::Variable(v) => v.ausrechnen(scope)
         }
     }
 }
@@ -98,5 +107,18 @@ mod tests {
         assert_eq!(12 + (23 + 2 / 1), v.as_int().unwrap());
     }
 
+    #[test]
+    fn expression_with_vars() {
+        let r = Expression::parse("12 + (23 + a / 1)").expect("Parse error");
+        let mut s = Scope::new();
+
+        println!("{:?}", r);
+
+        s.set(&"a".to_string(), Value::Integer(4));
+
+        let v = r.ausrechnen(&mut s).expect("Computation error");
+
+        assert_eq!(12 + (23 + 4 / 1), v.as_int().unwrap());
+    }
 
 }

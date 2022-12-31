@@ -17,12 +17,12 @@ Term = @:Mul | @:Div | @:Factor;
 Mul = left:*Term '*' right:Factor;
 Div = left:*Term '/' right:Factor;
 @memoize
-Factor = @:Group | @:NumberLiteral | @:VariableName;
+Factor = @:Group | @:NumberLiteral | @:Variable;
 Group = '(' body:*Expression ')';
 
 
 # ASSIGNMENT
-Assignment = variable:VariableName "=" ( value:Expression | value:StringLiteral );
+Assignment = variable:Variable "=" ( value:Expression | value:StringLiteral );
 
 # PRINT
 PrintStatement = KWPrint ( list:Expression | list:StringLiteral );
@@ -35,6 +35,8 @@ KWPrint = 'PRINT';
 KWEnd = 'END';
 
 # Variable
+Variable = name:VariableName;
+
 @string
 VariableName = ( >ALPHA | "_" | "`" ) { >ALPHA | >DIGIT | "_" | "%" | "$" };
 
