@@ -5,15 +5,27 @@ Block = {statements:Statement};
 
 Statement = @:PrintStatement | @:EndStatement;
 
+# PRINT
+PrintStatement = KWPrint ( literal:NumberLiteral | literal:StringLiteral );
 
-PrintStatement = KWPrint (literal:IntegerLiteral | literal:StringLiteral);
+# END
 EndStatement  = KWEnd;
 
+# KEYWORDS
 KWPrint = 'PRINT';
 KWEnd = 'END';
 
+# LITERALS
+NumberSign = '+' | '-';
+
+
+NumberLiteral = value:FloatLiteral | value:IntegerLiteral;
+
 @string
-IntegerLiteral = {'0'..'9'}+;
+IntegerLiteral = [NumberSign] {'0'..'9'}+;
+
+@string
+FloatLiteral = [NumberSign] {'0'..'9'}+ "." {'0'..'9'} [ 'E' {'0'..'9'}+ ];
 
 @no_skip_ws
 StringLiteral = '"' body:StringBody '"';
