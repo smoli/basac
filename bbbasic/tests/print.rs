@@ -67,3 +67,13 @@ fn print_skip_new_line() {
 
     assert_eq!(out.into_inner(), exp.into_inner())
 }
+
+#[test]
+fn print_a_variable() {
+    let (mut out, exp) = common::make_buffer("32\n");
+    let r = parser::Program::parse("x = 32\nPRINT x\n").expect("Parse failed");
+
+    r.execute(&mut out);
+
+    assert_eq!(out.into_inner(), exp.into_inner())
+}
