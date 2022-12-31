@@ -9,8 +9,6 @@ fn print_a_string() {
     let (mut out, exp) = common::make_buffer("Hello, World!\n");
     let r = parser::Program::parse("PRINT \"Hello, World!\"").expect("Parse failed");
 
-    println!("{:?}", r);
-
     r.execute(&mut out);
 
     assert_eq!(out.into_inner(), exp.into_inner())
@@ -21,8 +19,6 @@ fn print_an_integer() {
 
     let (mut out, exp) = common::make_buffer("12\n");
     let r = parser::Program::parse("PRINT 12").expect("Parse failed");
-
-    println!("{:?}", r);
 
     r.execute(&mut out);
 
@@ -35,8 +31,6 @@ fn print_a_float() {
     let (mut out, exp) = common::make_buffer("12.123\n");
     let r = parser::Program::parse("PRINT 12.123").expect("Parse failed");
 
-    println!("{:?}", r);
-
     r.execute(&mut out);
 
     assert_eq!(out.into_inner(), exp.into_inner())
@@ -47,8 +41,6 @@ fn print_a_float() {
 fn print_an_expression() {
     let (mut out, exp) = common::make_buffer("60\n");
     let r = parser::Program::parse("PRINT 12 + (23 * 2 + 4 / 2)").expect("Parse failed");
-
-    println!("{:?}", r);
 
     r.execute(&mut out);
 

@@ -1,14 +1,15 @@
 use crate::error::InterpreterError;
-use crate::parser::{Add, Div, Expression, Factor, Group, IntegerLiteral, Mul, NumberLiteral, NumberLiteral_value, Sub, Term, Variable};
+use crate::parser::{Add, Div, Expression, Factor, Group, Mul, NumberLiteral, NumberLiteral_value, Sub, Term, Variable};
 use crate::scope::Scope;
 use crate::value::Value;
 
 pub trait Compute {
+    #[allow(unused_variables)]
     fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError>;
 }
 
 impl Compute for NumberLiteral {
-    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+    fn compute(&self, _: &mut Scope) -> Result<Value, InterpreterError> {
         match &self.value {
             NumberLiteral_value::FloatLiteral(f) => Ok(Value::Float(f.parse().unwrap())),
             NumberLiteral_value::IntegerLiteral(i) => Ok(Value::Integer(i.parse().unwrap()))
@@ -19,7 +20,7 @@ impl Compute for NumberLiteral {
 impl Compute for Variable {
     fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
         match scope.get(&self.name) {
-            None => Err(InterpreterError::OperationUnsupported),
+            None => Err(InterpreterError::UnknownVariable),
             Some(v) => Ok(v.clone())
         }
     }
@@ -104,8 +105,6 @@ mod tests {
     fn expression_with_vars() {
         let r = Expression::parse("12 + (23 + a / 1)").expect("Parse error");
         let mut s = Scope::new();
-
-        println!("{:?}", r);
 
         s.set(&"a".to_string(), Value::Integer(4));
 

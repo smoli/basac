@@ -11,6 +11,7 @@ pub enum Value {
 
 impl Value {
 
+    #[allow(dead_code)]
     pub fn as_int(&self) -> Option<i64> {
         match self {
             Value::String(s) => Some(s.parse::<i64>().unwrap()),
