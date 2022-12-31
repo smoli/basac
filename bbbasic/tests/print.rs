@@ -39,3 +39,15 @@ fn print_a_float() {
 
     assert_eq!(out.into_inner(), exp.into_inner())
 }
+
+#[test]
+fn print_a_variable() {
+
+    let (mut out, exp) = common::make_buffer("143.23");
+    let r = parser::Program::parse("x = 143.23\nPRINT x").expect("Parse failed");
+
+    println!("{:?}", r);
+    execute(&r, &mut out);
+
+    assert_eq!(out.into_inner(), exp.into_inner())
+}

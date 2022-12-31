@@ -3,10 +3,17 @@ Program = body:Block;
 
 Block = {statements:Statement};
 
-Statement = @:PrintStatement | @:EndStatement;
+Statement = @:PrintStatement | @:EndStatement | @:Assignment;
+
+# Expression
+Expression = ( term:VariableName | term: NumberLiteral );
+
+
+# ASSIGNMENT
+Assignment = variable:VariableName "=" ( value:NumberLiteral | value:StringLiteral );
 
 # PRINT
-PrintStatement = KWPrint ( literal:NumberLiteral | literal:StringLiteral );
+PrintStatement = KWPrint ( list:Expression | list:StringLiteral );
 
 # END
 EndStatement  = KWEnd;
@@ -15,20 +22,27 @@ EndStatement  = KWEnd;
 KWPrint = 'PRINT';
 KWEnd = 'END';
 
+# Variable
+@string
+VariableName = ( >ALPHA | "_" | "`" ) { >ALPHA | >DIGIT | "_" | "%" | "$" };
+
 # LITERALS
 NumberSign = '+' | '-';
-
-
 NumberLiteral = value:FloatLiteral | value:IntegerLiteral;
 
 @string
 IntegerLiteral = [NumberSign] {'0'..'9'}+;
 
 @string
-FloatLiteral = [NumberSign] {'0'..'9'}+ "." {'0'..'9'} [ 'E' {'0'..'9'}+ ];
+FloatLiteral = [NumberSign] { >DIGIT }+ "." { >DIGIT} [ 'E' { >DIGIT }+ ];
 
 @no_skip_ws
 StringLiteral = '"' body:StringBody '"';
 
 @string
 StringBody = {!'"' char};
+
+
+# Basics
+ALPHA = 'a'..'z' | 'A'..'Z';
+DIGIT = '0'..'9';
