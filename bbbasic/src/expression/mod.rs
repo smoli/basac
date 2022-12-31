@@ -4,27 +4,27 @@ use crate::scope::Scope;
 use crate::value::Value;
 
 pub trait Compute {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError>;
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError>;
 }
 
 impl Compute for NumberLiteral {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
         match &self.value {
-            NumberLiteral_value::FloatLiteral(f) => f.ausrechnen(scope),
-            NumberLiteral_value::IntegerLiteral(i) => i.ausrechnen(scope)
+            NumberLiteral_value::FloatLiteral(f) => f.compute(scope),
+            NumberLiteral_value::IntegerLiteral(i) => i.compute(scope)
         }
     }
 }
 
 
 impl Compute for IntegerLiteral {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
         Ok(Value::Integer(self.parse().unwrap()))
     }
 }
 
 impl Compute for Variable {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
         match scope.get(&self.name) {
             None => Err(InterpreterError::OperationUnsupported),
             Some(v) => Ok(v.clone())
@@ -33,62 +33,62 @@ impl Compute for Variable {
 }
 
 impl Compute for Add {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
-        self.left.ausrechnen(scope)?.add(&self.right.ausrechnen(scope)?)
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+        self.left.compute(scope)?.add(&self.right.compute(scope)?)
     }
 }
 
 
 impl Compute for Sub {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
-        self.left.ausrechnen(scope)?.sub(&self.right.ausrechnen(scope)?)
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+        self.left.compute(scope)?.sub(&self.right.compute(scope)?)
     }
 }
 
 impl Compute for Mul {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
-        self.left.ausrechnen(scope)?.mul(&self.right.ausrechnen(scope)?)
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+        self.left.compute(scope)?.mul(&self.right.compute(scope)?)
     }
 }
 
 impl Compute for Div {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
-        self.left.ausrechnen(scope)?.div(&self.right.ausrechnen(scope)?)
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+        self.left.compute(scope)?.div(&self.right.compute(scope)?)
     }
 }
 
 impl Compute for Factor {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
         match self {
-            Factor::Group(g) => g.ausrechnen(scope),
-            Factor::NumberLiteral(n) => n.ausrechnen(scope),
-            Factor::Variable(v) => v.ausrechnen(scope)
+            Factor::Group(g) => g.compute(scope),
+            Factor::NumberLiteral(n) => n.compute(scope),
+            Factor::Variable(v) => v.compute(scope)
         }
     }
 }
 
 impl Compute for Term {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
         match self {
-            Term::Div(d) => d.ausrechnen(scope),
-            Term::Factor(f) => f.ausrechnen(scope),
-            Term::Mul(m) => m.ausrechnen(scope)
+            Term::Div(d) => d.compute(scope),
+            Term::Factor(f) => f.compute(scope),
+            Term::Mul(m) => m.compute(scope)
         }
     }
 }
 
 impl Compute for Group {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
-        self.body.ausrechnen(scope)
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+        self.body.compute(scope)
     }
 }
 
 impl Compute for Expression {
-    fn ausrechnen(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
+    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
         match self {
-            Expression::Add(a) => a.ausrechnen(scope),
-            Expression::Sub(s) => s.ausrechnen(scope),
-            Expression::Term(t) => t.ausrechnen(scope)
+            Expression::Add(a) => a.compute(scope),
+            Expression::Sub(s) => s.compute(scope),
+            Expression::Term(t) => t.compute(scope)
         }
     }
 }
@@ -102,7 +102,7 @@ mod tests {
     fn expression_can_be_parsed_and_computed() {
         let r = Expression::parse("12 + (23 + 2 / 1)").expect("Parse error");
         let mut s = Scope::new();
-        let v = r.ausrechnen(&mut s).expect("Computation error");
+        let v = r.compute(&mut s).expect("Computation error");
 
         assert_eq!(12 + (23 + 2 / 1), v.as_int().unwrap());
     }
@@ -116,7 +116,7 @@ mod tests {
 
         s.set(&"a".to_string(), Value::Integer(4));
 
-        let v = r.ausrechnen(&mut s).expect("Computation error");
+        let v = r.compute(&mut s).expect("Computation error");
 
         assert_eq!(12 + (23 + 4 / 1), v.as_int().unwrap());
     }
