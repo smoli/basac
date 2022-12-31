@@ -35,7 +35,7 @@ impl Value {
                 Value::Float(rhs) => Ok(*f > *rhs),
                 Value::Boolean(_) => Err(TypeMismatch)
             }
-            Value::String(s) => Err(TypeMismatch),
+            Value::String(_) => Err(TypeMismatch),
             Value::Boolean(_) => Err(TypeMismatch)
         }
     }

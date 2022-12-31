@@ -1,6 +1,6 @@
 use std::io::Write;
 use crate::expression::Compute;
-use crate::parser::{Assignment, Assignment_value, Block, ForStatement, ForStep, PrintListItem_value, PrintStatement, Program, Statement};
+use crate::parser::{Assignment, Assignment_value, Block, ForStatement, PrintListItem_value, PrintStatement, Program, Statement};
 
 use crate::scope::Scope;
 use crate::value::Value;
