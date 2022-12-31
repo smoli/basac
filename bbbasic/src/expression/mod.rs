@@ -90,13 +90,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn expression_can_be_parsed() {
+    fn expression_can_be_parsed_and_computed() {
         let r = Expression::parse("12 + (23 + 2 / 1)").expect("Parse error");
-
-        println!("{:?}", r);
-
         let mut s = Scope::new();
-
         let v = r.ausrechnen(&mut s).expect("Computation error");
 
         assert_eq!(12 + (23 + 2 / 1), v.as_int().unwrap());
