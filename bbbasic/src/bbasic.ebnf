@@ -1,9 +1,11 @@
 @export
 Program = body:Block;
 
-Block = {statements:Statement};
+Block = {statements:Statement NewLine } [statements:Statement];
 
-Statement = @:PrintStatement | @:EndStatement | @:Assignment;
+Statement = ( @:PrintStatement | @:EndStatement | @:Assignment );
+
+NewLine = "\n";
 
 # Expression
 
@@ -25,7 +27,10 @@ Group = '(' body:*Expression ')';
 Assignment = variable:Variable "=" ( value:Expression | value:StringLiteral );
 
 # PRINT
-PrintStatement = KWPrint ( list:Expression | list:StringLiteral );
+PrintStatement = KWPrint { list:PrintListItem };
+PrintSkipNl = ";";
+PrintListItem = (value:Expression | value:StringLiteral) [sep:PrintListSep];
+PrintListSep = ";";
 
 # END
 EndStatement  = KWEnd;
@@ -60,3 +65,6 @@ StringBody = {!'"' char};
 # Basics
 ALPHA = 'a'..'z' | 'A'..'Z';
 DIGIT = '0'..'9';
+
+@no_skip_ws
+Whitespace = {" "};

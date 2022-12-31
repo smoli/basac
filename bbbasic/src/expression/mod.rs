@@ -1,5 +1,5 @@
 use crate::error::InterpreterError;
-use crate::parser::{Add, Div, Expression, Factor, Group, IntegerLiteral, Mul, NumberLiteral, NumberLiteral_value, Sub, Term, Variable, VariableName};
+use crate::parser::{Add, Div, Expression, Factor, Group, IntegerLiteral, Mul, NumberLiteral, NumberLiteral_value, Sub, Term, Variable};
 use crate::scope::Scope;
 use crate::value::Value;
 
@@ -10,16 +10,9 @@ pub trait Compute {
 impl Compute for NumberLiteral {
     fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
         match &self.value {
-            NumberLiteral_value::FloatLiteral(f) => f.compute(scope),
-            NumberLiteral_value::IntegerLiteral(i) => i.compute(scope)
+            NumberLiteral_value::FloatLiteral(f) => Ok(Value::Float(f.parse().unwrap())),
+            NumberLiteral_value::IntegerLiteral(i) => Ok(Value::Integer(i.parse().unwrap()))
         }
-    }
-}
-
-
-impl Compute for IntegerLiteral {
-    fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
-        Ok(Value::Integer(self.parse().unwrap()))
     }
 }
 

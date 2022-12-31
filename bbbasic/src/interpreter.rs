@@ -1,17 +1,17 @@
-use std::borrow::Borrow;
-use std::collections::HashMap;
 use std::io::Write;
-use crate::interpreter::InterpreterError::TypeMismatch;
-use crate::parser::{Add, Assignment, Assignment_value, Block, Div, Expression, Factor, FloatLiteral, Group, IntegerLiteral, Mul, NumberLiteral, NumberLiteral_value, PrintStatement, PrintStatement_list, Program, Statement, Sub, Term};
-
-use crate::value::Value;
 use crate::error::InterpreterError;
+use crate::expression::Compute;
+use crate::parser::{Assignment, Block, PrintListItem_value, PrintSkipNl, PrintStatement, Program, Statement};
+
 use crate::scope::Scope;
+use crate::value::Value;
 
 
 trait Execute {
+    #[allow(unused_variables)]
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) {}
 
+    #[allow(unused_variables)]
     fn execute(&self, scope: &mut Scope) {}
 }
 
@@ -68,8 +68,37 @@ fn execute_assignment(assignment: &Assignment, scope: &mut Scope) {
 }
 
 impl Execute for PrintStatement {
+
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) {
 
+        for i in 0..self.list.len() {
+            let item = self.list.get(i).unwrap();
+
+            match &item.value {
+                PrintListItem_value::Expression(e) => {
+                    let v = e.compute(scope);
+
+                    match v {
+                        Ok(v) => match v {
+                            Value::String(s) => stdout.write_all(s.as_bytes()).unwrap(),
+                            Value::Integer(i) => stdout.write_all(format!("{}",i).as_bytes()).unwrap(),
+                            Value::Float(f) => stdout.write_all(format!("{}",f).as_bytes()).unwrap(),
+                            Value::Boolean(b) => stdout.write_all(format!("{}",b).as_bytes()).unwrap(),
+                        }
+                        Err(_) => {}
+                    };
+                }
+                PrintListItem_value::StringLiteral(s) => stdout.write_all(s.body.as_bytes()).unwrap()
+            }
+        }
+
+        if self.list.len() > 0 {
+
+        }
+        match self.list.last().unwrap().sep {
+            None => stdout.write_all("\n".as_bytes()).unwrap(),
+            Some(_) => {}
+        }
     }
 }
 
@@ -93,8 +122,10 @@ impl Execute for Statement {
 
 impl Execute for Block {
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) {
+        println!("{:?}", self.statements.len());
         for i in 0..self.statements.len() {
             let s = self.statements.get(i).unwrap();
+            println!("{:#?}", s);
             s.execute_stdout(scope, stdout)
         }
     }

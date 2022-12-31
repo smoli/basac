@@ -1,17 +1,17 @@
 use bbbasic::parser;
 use peginator::PegParser;
-use bbbasic::interpreter::execute;
 
 mod common;
 
 #[test]
 fn print_a_string() {
 
-    let (mut out, exp) = common::make_buffer("Hello, World!");
+    let (mut out, exp) = common::make_buffer("Hello, World!\n");
     let r = parser::Program::parse("PRINT \"Hello, World!\"").expect("Parse failed");
 
     println!("{:?}", r);
-    execute(&r, &mut out);
+
+    r.execute(&mut out);
 
     assert_eq!(out.into_inner(), exp.into_inner())
 }
@@ -19,11 +19,12 @@ fn print_a_string() {
 #[test]
 fn print_an_integer() {
 
-    let (mut out, exp) = common::make_buffer("12");
+    let (mut out, exp) = common::make_buffer("12\n");
     let r = parser::Program::parse("PRINT 12").expect("Parse failed");
 
     println!("{:?}", r);
-    execute(&r, &mut out);
+
+    r.execute(&mut out);
 
     assert_eq!(out.into_inner(), exp.into_inner())
 }
@@ -31,35 +32,46 @@ fn print_an_integer() {
 #[test]
 fn print_a_float() {
 
-    let (mut out, exp) = common::make_buffer("12.012");
-    let r = parser::Program::parse("PRINT 12.012").expect("Parse failed");
+    let (mut out, exp) = common::make_buffer("12.123\n");
+    let r = parser::Program::parse("PRINT 12.123").expect("Parse failed");
 
     println!("{:?}", r);
-    execute(&r, &mut out);
+
+    r.execute(&mut out);
+
+    assert_eq!(out.into_inner(), exp.into_inner())
+}
+
+
+#[test]
+fn print_an_expression() {
+    let (mut out, exp) = common::make_buffer("60\n");
+    let r = parser::Program::parse("PRINT 12 + (23 * 2 + 4 / 2)").expect("Parse failed");
+
+    println!("{:?}", r);
+
+    r.execute(&mut out);
 
     assert_eq!(out.into_inner(), exp.into_inner())
 }
 
 #[test]
-fn print_a_numeric_variable() {
+fn print_multiline() {
+    let (mut out, exp) = common::make_buffer("1\n2\n");
+    let r = parser::Program::parse("PRINT 1\nPRINT 2\n").expect("Parse failed");
 
-    let (mut out, exp) = common::make_buffer("143.23");
-    let r = parser::Program::parse("x = 143.23\nPRINT x").expect("Parse failed");
-
-    println!("{:?}", r);
-    execute(&r, &mut out);
+    r.execute(&mut out);
 
     assert_eq!(out.into_inner(), exp.into_inner())
 }
 
+
 #[test]
-fn print_a_string_variable() {
+fn print_skip_new_line() {
+    let (mut out, exp) = common::make_buffer("12\n");
+    let r = parser::Program::parse("PRINT 1;\nPRINT 2\n").expect("Parse failed");
 
-    let (mut out, exp) = common::make_buffer("Words don't come easy!");
-    let r = parser::Program::parse("x = \"Words don't come easy!\"\nPRINT x").expect("Parse failed");
-
-    println!("{:?}", r);
-    execute(&r, &mut out);
+    r.execute(&mut out);
 
     assert_eq!(out.into_inner(), exp.into_inner())
 }
