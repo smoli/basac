@@ -30,9 +30,9 @@ impl ComputeBool for BoolCondition {
         match self.op {
             BoolOperator::BoolOpEqual(_) => Ok(Value::Boolean(self.left.compute_bool(scope)?.eq(&self.right.compute_bool(scope)?)?)),
             BoolOperator::BoolOpGreater(_) => Ok(Value::Boolean(self.left.compute_bool(scope)?.gt(&self.right.compute_bool(scope)?)?)),
-            BoolOperator::BoolOpGreaterEqual(_) => Err(InterpreterError::NotImplemented),
+            BoolOperator::BoolOpGreaterEqual(_) => Ok(Value::Boolean(self.left.compute_bool(scope)?.ge(&self.right.compute_bool(scope)?)?)),
             BoolOperator::BoolOpLower(_) => Ok(Value::Boolean(self.left.compute_bool(scope)?.lt(&self.right.compute_bool(scope)?)?)),
-            BoolOperator::BoolOpLowerEqual(_) => Err(InterpreterError::NotImplemented),
+            BoolOperator::BoolOpLowerEqual(_) => Ok(Value::Boolean(self.left.compute_bool(scope)?.le(&self.right.compute_bool(scope)?)?)),
             BoolOperator::BoolOpNotEqual(_) => Err(InterpreterError::NotImplemented)
         }
     }
