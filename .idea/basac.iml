@@ -4,7 +4,9 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/bbbasic/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/bbbasic/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/bbcli/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/bbbasic/target" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

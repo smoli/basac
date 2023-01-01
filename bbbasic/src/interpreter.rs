@@ -181,9 +181,9 @@ impl Execute for Statement {
             Statement::Assignment(a) => a.execute(scope),
             Statement::ForStatement(f) => f.execute_stdout(scope, stdout),
             Statement::IfStatement(i) => i.execute_stdout(scope, stdout),
-            Statement::ExitForStatement(_) => Ok(ExecutionResult::Exit(ExitReason::For)),
+            Statement::ExitForStatement(_) => Ok(Exit(For)),
             Statement::WhileStatement(w) => w.execute_stdout(scope, stdout),
-            Statement::ExitWhileStatement(_) => Ok(ExecutionResult::Exit(ExitReason::While))
+            Statement::ExitWhileStatement(_) => Ok(Exit(While))
         };
     }
 }
@@ -196,7 +196,7 @@ impl Execute for Block {
             let result = statement.execute_stdout(scope, stdout)?;
 
             match result {
-                ExecutionResult::Exit(_) => return Ok(result.clone()),
+                Exit(_) => return Ok(result.clone()),
                 _ => {}
             };
         }
@@ -205,11 +205,9 @@ impl Execute for Block {
     }
 }
 
-
 impl Program {
     pub fn execute(&self, stdout: &mut impl Write) -> Result<ExecutionResult, InterpreterError> {
         let mut scope = Scope::new();
         self.body.execute_stdout(&mut scope, stdout)
     }
 }
-

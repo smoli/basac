@@ -5,7 +5,7 @@ Block = {statements:Statement {NewLine} } [statements:Statement];
 
 Statement = ( @:ExitWhileStatement | @:WhileStatement | @:ExitForStatement | @:IfStatement | @:ForStatement | @:PrintStatement | @:EndStatement | @:Assignment  );
 
-NewLine = "\n";
+NewLine = "\n" | "\r\n";
 
 # Expression
 
