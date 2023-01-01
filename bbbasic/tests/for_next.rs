@@ -49,5 +49,24 @@ NEXT i
     r.execute(&mut out).expect("Execution failed");
 
     assert_eq!(out.stringify(), exp.stringify());
+}
 
+#[test]
+fn for_loop_premature_exit() {
+    let (mut out, exp) = common::make_buffer("1\n2\n3\n4\n5\n");
+    let inp =
+"FOR i = 1 TO 9
+    PRINT i
+    IF i > 4 THEN
+        EXIT FOR
+    ENDIF
+NEXT i
+";
+
+
+    let r = parser::Program::parse(inp).expect("Parse failed");
+    println!("{:#?}", r);
+    r.execute(&mut out).expect("Execution failed");
+
+    assert_eq!(out.stringify(), exp.stringify());
 }

@@ -2,6 +2,7 @@ use std::io::Write;
 use crate::bool_expression::ComputeBool;
 use crate::error::InterpreterError;
 use crate::expression::Compute;
+use crate::interpreter::ExecutionResult::ExitFor;
 use crate::parser::{Assignment, Assignment_value, Block, ForStatement, IfStatement, PrintListItem_value, PrintStatement, Program, Statement};
 
 use crate::scope::Scope;
@@ -91,19 +92,27 @@ impl Execute for ForStatement {
 
 impl ForStatement {
     fn iterate(&self, target: &Value, step: &Value, scope: &mut Scope, stdout: &mut impl Write) -> Result<bool, InterpreterError> {
-        self.body.execute_stdout(scope, stdout)?;
+        let result = self.body.execute_stdout(scope, stdout)?;
 
-        let curr = scope.get(&self.assignment.variable.name)?;
+        match result {
+            ExecutionResult::Ok => {
+                let curr = scope.get(&self.assignment.variable.name)?;
 
-        let next = curr.add(step)?;
+                let next = curr.add(step)?;
 
-        if next.gt(target).unwrap() {
-            return Ok(false)
+                if next.gt(target).unwrap() {
+                    return Ok(false)
+                }
+
+                scope.set(&self.assignment.variable.name, next.clone());
+
+                Ok(true)
+            }
+            ExecutionResult::ExitFor => {
+                println!("EXIT FOR");
+                Ok(false)
+            }
         }
-
-        scope.set(&self.assignment.variable.name, next.clone());
-
-        Ok(true)
     }
 }
 
@@ -141,7 +150,12 @@ impl Execute for Block {
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) -> Result<ExecutionResult, InterpreterError> {
         for i in 0..self.statements.len() {
             let s = self.statements.get(i).unwrap();
-            s.execute_stdout(scope, stdout)?;
+            let r = s.execute_stdout(scope, stdout)?;
+
+            match r {
+                ExitFor => return Ok(ExitFor),
+                _ => {}
+            };
         }
 
         Ok(ExecutionResult::Ok)
