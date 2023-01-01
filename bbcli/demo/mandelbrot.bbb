@@ -27,7 +27,7 @@ FOR Py = 1 TO H
             PRINT " ";
         ENDIF
         IF iteration > 3 AND iteration <= 6 THEN
-            PRINT ".";
+            PRINT "·";
         ENDIF
         IF iteration > 6 AND iteration <= 7 THEN
             PRINT "-";
