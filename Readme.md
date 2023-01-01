@@ -41,6 +41,8 @@ will produce
 Hello, World!
 ```
 
+Executing
+
 ```shell
 $ bbcli demos\mandelbrot.bbb
 ```
