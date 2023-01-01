@@ -21,6 +21,38 @@ impl Value {
         }
     }
 
+    #[allow(dead_code)]
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            Value::String(_) => None,
+            Value::Integer(_) => None,
+            Value::Float(_) => None,
+            Value::Boolean(b) => Some(*b)
+        }
+    }
+
+    pub fn eq(&self, rhs:&Value) -> Result<bool, InterpreterError> {
+        match &self {
+            Value::Integer(i) => match rhs {
+                Value::String(_) => Err(TypeMismatch),
+                Value::Integer(rhs) => Ok(*i == *rhs),
+                Value::Float(rhs) => Ok(*i as f64 == *rhs),
+                Value::Boolean(_) => Err(TypeMismatch)
+            }
+            Value::Float(f) => match rhs {
+                Value::String(_) => Err(TypeMismatch),
+                Value::Integer(rhs) => Ok(*f == *rhs as f64),
+                Value::Float(rhs) => Ok(*f == *rhs),
+                Value::Boolean(_) => Err(TypeMismatch)
+            }
+            Value::String(lhs) => match rhs {
+                Value::String(rhs) => Ok(lhs == rhs),
+                _ => Err(TypeMismatch)
+            },
+            Value::Boolean(_) => Err(TypeMismatch)
+        }
+    }
+
     pub fn gt(&self, rhs:&Value) -> Result<bool, InterpreterError> {
         match &self {
             Value::Integer(i) => match rhs {
@@ -33,6 +65,25 @@ impl Value {
                 Value::String(_) => Err(TypeMismatch),
                 Value::Integer(rhs) => Ok(*f > *rhs as f64),
                 Value::Float(rhs) => Ok(*f > *rhs),
+                Value::Boolean(_) => Err(TypeMismatch)
+            }
+            Value::String(_) => Err(TypeMismatch),
+            Value::Boolean(_) => Err(TypeMismatch)
+        }
+    }
+
+    pub fn lt(&self, rhs:&Value) -> Result<bool, InterpreterError> {
+        match &self {
+            Value::Integer(i) => match rhs {
+                Value::String(_) => Err(TypeMismatch),
+                Value::Integer(rhs) => Ok(*i < *rhs),
+                Value::Float(rhs) => Ok(*i < *rhs as i64),
+                Value::Boolean(_) => Err(TypeMismatch)
+            }
+            Value::Float(f) => match rhs {
+                Value::String(_) => Err(TypeMismatch),
+                Value::Integer(rhs) => Ok(*f < *rhs as f64),
+                Value::Float(rhs) => Ok(*f < *rhs),
                 Value::Boolean(_) => Err(TypeMismatch)
             }
             Value::String(_) => Err(TypeMismatch),

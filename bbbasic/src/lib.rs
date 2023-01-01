@@ -5,3 +5,4 @@ mod value;
 mod error;
 mod expression;
 mod scope;
+mod bool_expression;

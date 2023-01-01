@@ -23,6 +23,22 @@ Factor = @:Group | @:NumberLiteral | @:Variable;
 Group = '(' body:*Expression ')';
 
 
+# Bool Expression
+@export
+BoolExpression = disjunction:BoolDisjunction;
+BoolDisjunction = conjunction:BoolConjunction { "OR" conjunction:BoolConjunction };
+BoolConjunction = term:BoolTerm { "AND" term:BoolTerm };
+BoolTerm = ("(" expression:BoolExpression ")") | condition:BoolCondition;
+BoolCondition = left:BoolOperand op:BoolOperator right:BoolOperand;
+BoolOperator = @:BoolOpNotEqual | @:BoolOpEqual | @:BoolOpLowerEqual | @:BoolOpGreaterEqual | @:BoolOpLower | @:BoolOpGreater;
+BoolOperand = @:Expression | @:StringLiteral;
+BoolOpNotEqual = "<>";
+BoolOpEqual = "=";
+BoolOpLowerEqual = "<=";
+BoolOpGreaterEqual = ">=";
+BoolOpLower = "<";
+BoolOpGreater = ">";
+
 # ASSIGNMENT
 Assignment = variable:Variable "=" ( value:Expression | value:StringLiteral );
 
