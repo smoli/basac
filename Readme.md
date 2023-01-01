@@ -3,7 +3,7 @@ BAsAC
 
 The Browser as a Computer - Project, a.k.a "another silly idea".
 
-The idea is, to provide an environment that allow a user to use the
+The idea is, to provide an environment that allows the user to use the
 browser as a simple computer, i.e. load programs and execute them.
 
 
