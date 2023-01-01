@@ -16,7 +16,7 @@ Subset of BBC-Basic.
 Commandline interpreter for bbbasic.
 
 
-## Hot to build
+## How to build
 
 Clone the repository and build it using `cargo`.
 
