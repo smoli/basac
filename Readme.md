@@ -45,6 +45,8 @@ Hello, World!
 
 * Expand featureset of bbbasic
 * Transpile bbbasic to wasm
+* REPL-Mode for bbcli
+* Loader-Environment-Webapp
 
 ## License
 
