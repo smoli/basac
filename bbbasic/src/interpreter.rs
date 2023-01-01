@@ -2,6 +2,8 @@ use std::io::Write;
 use crate::bool_expression::ComputeBool;
 use crate::error::InterpreterError;
 use crate::expression::Compute;
+use crate::interpreter::ExecutionResult::Exit;
+use crate::interpreter::ExitReason::{For, While};
 use crate::parser::{Assignment, Assignment_value, Block, ForStatement, IfStatement, PrintListItem_value, PrintStatement, Program, Statement, WhileStatement};
 
 use crate::scope::Scope;
@@ -10,13 +12,14 @@ use crate::value::Value;
 #[derive(Clone, Copy)]
 pub enum ExitReason {
     For,
-    While
+    While,
 }
 
 #[derive(Clone, Copy)]
 pub enum ExecutionResult {
     Ok,
-    Exit(ExitReason)
+    ForCompleted,
+    Exit(ExitReason),
 }
 
 
@@ -42,11 +45,11 @@ impl Execute for PrintStatement {
                     let v = e.compute(scope)?;
 
                     match v {
-                            Value::String(s) => stdout.write_all(s.as_bytes()).unwrap(),
-                            Value::Integer(i) => stdout.write_all(format!("{}", i).as_bytes()).unwrap(),
-                            Value::Float(f) => stdout.write_all(format!("{}", f).as_bytes()).unwrap(),
-                            Value::Boolean(b) => stdout.write_all(format!("{}", b).as_bytes()).unwrap(),
-                        }
+                        Value::String(s) => stdout.write_all(s.as_bytes()).unwrap(),
+                        Value::Integer(i) => stdout.write_all(format!("{}", i).as_bytes()).unwrap(),
+                        Value::Float(f) => stdout.write_all(format!("{}", f).as_bytes()).unwrap(),
+                        Value::Boolean(b) => stdout.write_all(format!("{}", b).as_bytes()).unwrap(),
+                    }
                 }
                 PrintListItem_value::StringLiteral(s) => stdout.write_all(s.body.as_bytes()).unwrap()
             };
@@ -72,7 +75,6 @@ impl Execute for Assignment {
 
         Ok(ExecutionResult::Ok)
     }
-
 }
 
 impl Execute for ForStatement {
@@ -87,17 +89,27 @@ impl Execute for ForStatement {
         let target = self.target.compute(scope)?;
 
         loop {
-            if self.iterate(&target, &step, scope, stdout)? == false {
-                break
+            match self.iterate(&target, &step, scope, stdout)? {
+                ExecutionResult::Ok => {}
+
+                ExecutionResult::ForCompleted => {
+                    return Ok(ExecutionResult::Ok);
+                }
+
+                Exit(ExitReason::For) => {
+                    return Ok(ExecutionResult::Ok);
+                }
+                Exit(ExitReason::While) => {
+                    return Ok(Exit(While));
+                }
             }
         }
-
-        Ok(ExecutionResult::Ok)
     }
 }
 
 impl ForStatement {
-    fn iterate(&self, target: &Value, step: &Value, scope: &mut Scope, stdout: &mut impl Write) -> Result<bool, InterpreterError> {
+    fn iterate(&self, target: &Value, step: &Value, scope: &mut Scope, stdout: &mut impl Write)
+               -> Result<ExecutionResult, InterpreterError> {
         let result = self.body.execute_stdout(scope, stdout)?;
 
         match result {
@@ -107,16 +119,19 @@ impl ForStatement {
                 let next = curr.add(step)?;
 
                 if next.gt(target).unwrap() {
-                    return Ok(false)
+                    return Ok(ExecutionResult::ForCompleted);
                 }
 
                 scope.set(&self.assignment.variable.name, next.clone());
 
-                Ok(true)
+                Ok(ExecutionResult::Ok)
             }
-            ExecutionResult::Exit(_) => {
-                Ok(false)
+
+            Exit(reason) => {
+                Ok(Exit(reason))
             }
+
+            ExecutionResult::ForCompleted => Err(InterpreterError::OperationUnsupported)
         }
     }
 }
@@ -138,7 +153,6 @@ impl Execute for IfStatement {
 
 impl Execute for WhileStatement {
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) -> Result<ExecutionResult, InterpreterError> {
-
         loop {
             let c = self.condition.compute_bool(scope)?.as_bool()?;
 
@@ -147,7 +161,9 @@ impl Execute for WhileStatement {
 
                 match r {
                     ExecutionResult::Ok => {}
-                    ExecutionResult::Exit(_) => return Ok(ExecutionResult::Ok)
+                    Exit(While) => return Ok(ExecutionResult::Ok),
+                    Exit(For) => return Ok(Exit(For)),
+                    ExecutionResult::ForCompleted => return Err(InterpreterError::OperationUnsupported)
                 }
             } else {
                 break;
@@ -170,7 +186,7 @@ impl Execute for Statement {
             Statement::ExitForStatement(_) => Ok(ExecutionResult::Exit(ExitReason::For)),
             Statement::WhileStatement(w) => w.execute_stdout(scope, stdout),
             Statement::ExitWhileStatement(_) => Ok(ExecutionResult::Exit(ExitReason::While))
-        }
+        };
     }
 }
 

@@ -69,3 +69,46 @@ NEXT i
 
     assert_eq!(out.stringify(), exp.stringify());
 }
+
+
+#[test]
+fn for_next_nested_exit() {
+    let (mut out, exp) = common::make_buffer("00\n");
+    let inp =
+"FOR y = 0 TO 2
+    x = 0
+    WHILE x < 3
+       PRINT x;y
+       EXIT FOR
+       x = x + 1
+    ENDWHILE
+NEXT y";
+
+    let r = parser::Program::parse(inp).expect("Parse failed");
+
+    r.execute(&mut out).expect("Execution failed");
+
+    assert_eq!(out.stringify(), exp.stringify());
+}
+
+
+
+#[test]
+fn for_next_exit_in_while() {
+    let (mut out, exp) = common::make_buffer("00\n01\n02\n");
+    let inp =
+"FOR y = 0 TO 2
+    x = 0
+    WHILE x < 3
+       PRINT x;y
+       EXIT WHILE
+       x = x + 1
+    ENDWHILE
+NEXT y";
+
+    let r = parser::Program::parse(inp).expect("Parse failed");
+
+    r.execute(&mut out).expect("Execution failed");
+
+    assert_eq!(out.stringify(), exp.stringify());
+}
