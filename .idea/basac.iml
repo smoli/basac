@@ -5,8 +5,15 @@
       <sourceFolder url="file://$MODULE_DIR$/bbbasic/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/bbbasic/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/bbcli/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/peginator/cli/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/peginator/codegen/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/peginator/macro/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/peginator/macro/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/peginator/runtime/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/peginator/test/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/bbbasic/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/peginator/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
