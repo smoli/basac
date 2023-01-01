@@ -1,30 +1,51 @@
-W = 800.0
-H = 200.0
-MW = 2.47
-MH = 2.24
-MAXIT = 10
+W = 120.0
+H = 35.0
+MW = 3.0
+MH = 2.8
+MAXIT = 20
 
 FOR Py = 1 TO H
-    y0 = (Py / H) * MH - 1.12
+    y0 = (Py / H) * MH - 1.4
     FOR Px = 1 TO W
         x0 = (Px / W) * MW - 2.0
 
         x = 0.0
         y = 0.0
+        x2 = 0.0
+        y2 = 0.0
         iteration = 0
 
         WHILE x * x  + y * y <= 4 AND iteration < MAXIT
-            xtemp = x * x - y * y + x0
             y = 2 * x * y + y0
-            x = xtemp
-
+            x = x2 - y2 + x0
+            x2 = x * x
+            y2 = y * y
             iteration = iteration + 1
         ENDWHILE
 
-        IF iteration >= MAXIT THEN
-            PRINT "@";
-        ELSE
+        IF iteration <= 3 THEN
+            PRINT " ";
+        ENDIF
+        IF iteration > 3 AND iteration <= 6 THEN
             PRINT ".";
+        ENDIF
+        IF iteration > 6 AND iteration <= 7 THEN
+            PRINT "-";
+        ENDIF
+        IF iteration > 7 AND iteration <= 12 THEN
+            PRINT "+";
+        ENDIF
+        IF iteration > 12 AND iteration <= 15 THEN
+            PRINT "/";
+        ENDIF
+        IF iteration > 15 AND iteration <= 18 THEN
+            PRINT "X";
+        ENDIF
+        IF iteration > 18 AND iteration <= 19 THEN
+            PRINT "#";
+        ENDIF
+        IF iteration > 19 THEN
+            PRINT "#";
         ENDIF
 
     NEXT Px
