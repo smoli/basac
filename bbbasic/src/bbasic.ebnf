@@ -3,7 +3,7 @@ Program = body:Block $;
 
 Block = {statements:Statement {NewLine} } [statements:Statement];
 
-Statement = ( @:WhileStatement | @:ExitForStatement | @:IfStatement | @:ForStatement | @:PrintStatement | @:EndStatement | @:Assignment  );
+Statement = ( @:ExitWhileStatement | @:WhileStatement | @:ExitForStatement | @:IfStatement | @:ForStatement | @:PrintStatement | @:EndStatement | @:Assignment  );
 
 NewLine = "\n";
 
@@ -40,7 +40,6 @@ BoolOpLower = "<";
 BoolOpGreater = ">";
 
 # IF
-
 ThenBlock = @:Block;
 ElseBlock = @:Block;
 IfCondition = @:BoolDisjunction;
@@ -50,6 +49,7 @@ IfStatement = KWIf condition:IfCondition KWThen {NewLine}+ then_block:ThenBlock 
 # WHILE
 WhileStatement = KWWhile condition:WhileCondition {NewLine}+ body:Block {NewLine} KWEndwhile;
 WhileCondition = @:BoolDisjunction;
+ExitWhileStatement = KWExit KWWhile;
 
 # ASSIGNMENT
 Assignment = variable:Variable "=" ( value:Expression | value:StringLiteral );

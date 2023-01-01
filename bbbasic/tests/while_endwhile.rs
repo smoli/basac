@@ -21,3 +21,25 @@ ENDWHILE";
     assert_eq!(out.stringify(), exp.stringify());
 
 }
+
+
+#[test]
+fn while_endwhile_premature_exit() {
+    let (mut out, exp) = common::make_buffer("0\n1\n2\n");
+    let inp =
+        "x = 0
+WHILE x < 5
+PRINT x
+x = x + 1
+IF x > 2 THEN
+EXIT WHILE
+ENDIF
+ENDWHILE";
+
+    let r = parser::Program::parse(inp).expect("Parse failed");
+
+    r.execute(&mut out).expect("Execution failed");
+
+    assert_eq!(out.stringify(), exp.stringify());
+
+}

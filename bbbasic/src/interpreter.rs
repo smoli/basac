@@ -2,15 +2,21 @@ use std::io::Write;
 use crate::bool_expression::ComputeBool;
 use crate::error::InterpreterError;
 use crate::expression::Compute;
-use crate::interpreter::ExecutionResult::ExitFor;
 use crate::parser::{Assignment, Assignment_value, Block, ForStatement, IfStatement, PrintListItem_value, PrintStatement, Program, Statement, WhileStatement};
 
 use crate::scope::Scope;
 use crate::value::Value;
 
+#[derive(Clone, Copy)]
+pub enum ExitReason {
+    For,
+    While
+}
+
+#[derive(Clone, Copy)]
 pub enum ExecutionResult {
     Ok,
-    ExitFor
+    Exit(ExitReason)
 }
 
 
@@ -108,8 +114,7 @@ impl ForStatement {
 
                 Ok(true)
             }
-            ExecutionResult::ExitFor => {
-                println!("EXIT FOR");
+            ExecutionResult::Exit(_) => {
                 Ok(false)
             }
         }
@@ -138,7 +143,12 @@ impl Execute for WhileStatement {
             let c = self.condition.compute_bool(scope)?.as_bool()?;
 
             if c {
-                self.body.execute_stdout(scope, stdout)?;
+                let r = self.body.execute_stdout(scope, stdout)?;
+
+                match r {
+                    ExecutionResult::Ok => {}
+                    ExecutionResult::Exit(_) => return Ok(ExecutionResult::Ok)
+                }
             } else {
                 break;
             }
@@ -157,8 +167,9 @@ impl Execute for Statement {
             Statement::Assignment(a) => a.execute(scope),
             Statement::ForStatement(f) => f.execute_stdout(scope, stdout),
             Statement::IfStatement(i) => i.execute_stdout(scope, stdout),
-            Statement::ExitForStatement(_) => Ok(ExecutionResult::ExitFor),
-            Statement::WhileStatement(w) => w.execute_stdout(scope, stdout)
+            Statement::ExitForStatement(_) => Ok(ExecutionResult::Exit(ExitReason::For)),
+            Statement::WhileStatement(w) => w.execute_stdout(scope, stdout),
+            Statement::ExitWhileStatement(_) => Ok(ExecutionResult::Exit(ExitReason::While))
         }
     }
 }
@@ -167,11 +178,11 @@ impl Execute for Statement {
 impl Execute for Block {
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) -> Result<ExecutionResult, InterpreterError> {
         for i in 0..self.statements.len() {
-            let s = self.statements.get(i).unwrap();
-            let r = s.execute_stdout(scope, stdout)?;
+            let statement = self.statements.get(i).unwrap();
+            let result = statement.execute_stdout(scope, stdout)?;
 
-            match r {
-                ExitFor => return Ok(ExitFor),
+            match result {
+                ExecutionResult::Exit(_) => return Ok(result.clone()),
                 _ => {}
             };
         }
