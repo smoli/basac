@@ -3,7 +3,7 @@ Program = body:Block $;
 
 Block = {statements:Statement {NewLine} } [statements:Statement];
 
-Statement = ( @:ExitForStatement | @:IfStatement | @:ForStatement | @:PrintStatement | @:EndStatement | @:Assignment  );
+Statement = ( @:WhileStatement | @:ExitForStatement | @:IfStatement | @:ForStatement | @:PrintStatement | @:EndStatement | @:Assignment  );
 
 NewLine = "\n";
 
@@ -47,6 +47,10 @@ IfCondition = @:BoolDisjunction;
 IfStatement = KWIf condition:IfCondition KWThen {NewLine}+ then_block:ThenBlock [{NewLine} KWElse {NewLine}+ else_block:ElseBlock] {NewLine} KWEndif;
 
 
+# WHILE
+WhileStatement = KWWhile condition:WhileCondition {NewLine}+ body:Block {NewLine} KWEndwhile;
+WhileCondition = @:BoolDisjunction;
+
 # ASSIGNMENT
 Assignment = variable:Variable "=" ( value:Expression | value:StringLiteral );
 
@@ -79,6 +83,8 @@ KWThen = 'THEN';
 KWElse = 'ELSE';
 KWEndif = 'ENDIF';
 KWExit = "EXIT";
+KWWhile = "WHILE";
+KWEndwhile = "ENDWHILE";
 
 # Variable
 Variable = name:VariableName;

@@ -3,7 +3,7 @@ use crate::bool_expression::ComputeBool;
 use crate::error::InterpreterError;
 use crate::expression::Compute;
 use crate::interpreter::ExecutionResult::ExitFor;
-use crate::parser::{Assignment, Assignment_value, Block, ForStatement, IfStatement, PrintListItem_value, PrintStatement, Program, Statement};
+use crate::parser::{Assignment, Assignment_value, Block, ForStatement, IfStatement, PrintListItem_value, PrintStatement, Program, Statement, WhileStatement};
 
 use crate::scope::Scope;
 use crate::value::Value;
@@ -131,6 +131,23 @@ impl Execute for IfStatement {
     }
 }
 
+impl Execute for WhileStatement {
+    fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) -> Result<ExecutionResult, InterpreterError> {
+
+        loop {
+            let c = self.condition.compute_bool(scope)?.as_bool()?;
+
+            if c {
+                self.body.execute_stdout(scope, stdout)?;
+            } else {
+                break;
+            }
+        }
+
+        Ok(ExecutionResult::Ok)
+    }
+}
+
 
 impl Execute for Statement {
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) -> Result<ExecutionResult, InterpreterError> {
@@ -140,7 +157,8 @@ impl Execute for Statement {
             Statement::Assignment(a) => a.execute(scope),
             Statement::ForStatement(f) => f.execute_stdout(scope, stdout),
             Statement::IfStatement(i) => i.execute_stdout(scope, stdout),
-            Statement::ExitForStatement(_) => Ok(ExecutionResult::ExitFor)
+            Statement::ExitForStatement(_) => Ok(ExecutionResult::ExitFor),
+            Statement::WhileStatement(w) => w.execute_stdout(scope, stdout)
         }
     }
 }
