@@ -172,12 +172,12 @@ mod tests {
     fn bool_expression_gt() {
         let mut s = Scope::new();
 
-        let r1 = BoolExpression::parse("12 > 11").expect("Parse failed");
+        let r1 = BoolExpression::parse("12 > 10 + 1").expect("Parse failed");
         let v1 = r1.compute_bool(&mut s).expect("Boolean computation failed");
         println!("{:?}", v1);
         assert!(v1.as_bool().expect("Not a bool"));
 
-        let r2 = BoolExpression::parse("12 > 14").expect("Parse failed");
+        let r2 = BoolExpression::parse("12 > 10 + 4").expect("Parse failed");
         let v2 = r2.compute_bool(&mut s).expect("Boolean computation failed");
         println!("{:?}", v2);
         assert!(!v2.as_bool().expect("Not a bool"));
