@@ -1,6 +1,7 @@
 use std::io::Write;
+use crate::bool_expression::ComputeBool;
 use crate::expression::Compute;
-use crate::parser::{Assignment, Assignment_value, Block, ForStatement, PrintListItem_value, PrintStatement, Program, Statement};
+use crate::parser::{Assignment, Assignment_value, Block, ElseBlock, ForStatement, IfStatement, PrintListItem_value, PrintStatement, Program, Statement};
 
 use crate::scope::Scope;
 use crate::value::Value;
@@ -90,6 +91,23 @@ impl ForStatement {
     }
 }
 
+impl Execute for IfStatement {
+    fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) {
+        let c = self.condition.compute_bool(scope).unwrap().as_bool().unwrap();
+
+        if c == true {
+            self.thenBlock.execute_stdout(scope, stdout);
+        } else {
+            match &self.elseBlock {
+                None => {}
+                Some(e) => e.execute_stdout(scope, stdout)
+            };
+
+        }
+
+    }
+}
+
 
 impl Execute for Statement {
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) {
@@ -97,7 +115,8 @@ impl Execute for Statement {
             Statement::EndStatement(_) => {}
             Statement::PrintStatement(s) => s.execute_stdout(scope, stdout),
             Statement::Assignment(a) => a.execute(scope),
-            Statement::ForStatement(f) => f.execute_stdout(scope, stdout)
+            Statement::ForStatement(f) => f.execute_stdout(scope, stdout),
+            Statement::IfStatement(i) => i.execute_stdout(scope, stdout)
         }
     }
 }
