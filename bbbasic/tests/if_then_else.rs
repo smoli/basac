@@ -31,7 +31,12 @@ fn if_then_else() {
 IF x = 2 THEN
 PRINT 1
 ELSE
+
+
+
 PRINT 2
+
+
 ENDIF";
 
     let r = parser::Program::parse(inp).expect("Parse failed");

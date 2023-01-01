@@ -44,7 +44,7 @@ BoolOpGreater = ">";
 ThenBlock = @:Block;
 ElseBlock = @:Block;
 IfCondition = @:BoolDisjunction;
-IfStatement = KWIf condition:IfCondition KWThen NewLine thenBlock:ThenBlock [KWElse NewLine elseBlock:ElseBlock] KWEndif;
+IfStatement = KWIf condition:IfCondition KWThen {NewLine}+ thenBlock:ThenBlock [{NewLine} KWElse {NewLine}+ elseBlock:ElseBlock] {NewLine} KWEndif;
 
 
 # ASSIGNMENT
