@@ -169,11 +169,9 @@ impl Execute for WhileStatement {
                 break;
             }
         }
-
         Ok(ExecutionResult::Ok)
     }
 }
-
 
 impl Execute for Statement {
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) -> Result<ExecutionResult, InterpreterError> {

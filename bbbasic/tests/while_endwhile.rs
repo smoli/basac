@@ -62,8 +62,6 @@ ENDWHILE";
         r.execute(&mut out).expect("Execution failed");
 
         assert_eq!(out.stringify(), exp.stringify());
-
-
 }
 
 
