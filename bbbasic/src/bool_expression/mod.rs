@@ -174,12 +174,10 @@ mod tests {
 
         let r1 = BoolExpression::parse("12 > 10 + 1").expect("Parse failed");
         let v1 = r1.compute_bool(&mut s).expect("Boolean computation failed");
-        println!("{:?}", v1);
         assert!(v1.as_bool().expect("Not a bool"));
 
         let r2 = BoolExpression::parse("12 > 10 + 4").expect("Parse failed");
         let v2 = r2.compute_bool(&mut s).expect("Boolean computation failed");
-        println!("{:?}", v2);
         assert!(!v2.as_bool().expect("Not a bool"));
     }
 
@@ -189,17 +187,14 @@ mod tests {
 
         let r1 = BoolExpression::parse("12 = 12.0").expect("Parse failed");
         let v1 = r1.compute_bool(&mut s).expect("Boolean computation failed");
-        println!("{:?}", v1);
         assert!(v1.as_bool().expect("Not a bool"));
 
         let r2 = BoolExpression::parse("12 = 14").expect("Parse failed");
         let v2 = r2.compute_bool(&mut s).expect("Boolean computation failed");
-        println!("{:?}", v2);
         assert!(!v2.as_bool().expect("Not a bool"));
 
         let r3 = BoolExpression::parse("\"ABC\" = \"ABC\"").expect("Parse failed");
         let v3 = r3.compute_bool(&mut s).expect("Boolean computation failed");
-        println!("{:?}", v3);
         assert!(v3.as_bool().expect("Not a bool"));
     }
 
@@ -212,7 +207,6 @@ mod tests {
 
         let r1 = BoolExpression::parse("a = b").expect("Parse failed");
         let v1 = r1.compute_bool(&mut s).expect("Boolean computation failed");
-        println!("{:?}", v1);
         assert!(v1.as_bool().expect("Not a bool"));
     }
 
@@ -225,12 +219,10 @@ mod tests {
 
         let r = BoolExpression::parse("a * 2 = b * 2").expect("Parse failed");
         let v = r.compute_bool(&mut s).expect("Boolean computation failed");
-        println!("{:?}", v);
         assert!(v.as_bool().expect("Not a bool"));
 
         let r = BoolExpression::parse("3 > b * 2").expect("Parse failed");
         let v = r.compute_bool(&mut s).expect("Boolean computation failed");
-        println!("{:?}", v);
         assert!(v.as_bool().expect("Not a bool"));
     }
 
@@ -243,17 +235,14 @@ mod tests {
 
         let r = BoolExpression::parse("a = \"ABC\"").expect("Parse failed");
         let v = r.compute_bool(&mut s).expect("Boolean computation failed");
-        println!("{:?}", v);
         assert!(v.as_bool().expect("Not a bool"));
 
         let r = BoolExpression::parse("\"ABC\" = a").expect("Parse failed");
         let v = r.compute_bool(&mut s).expect("Boolean computation failed");
-        println!("{:?}", v);
         assert!(v.as_bool().expect("Not a bool"));
 
         let r = BoolExpression::parse("\"ABC\" = \"ABC\"").expect("Parse failed");
         let v = r.compute_bool(&mut s).expect("Boolean computation failed");
-        println!("{:?}", v);
         assert!(v.as_bool().expect("Not a bool"));
     }
 }
