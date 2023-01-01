@@ -9,7 +9,7 @@ browser as a simple computer, i.e. load programs and execute them.
 
 ## bbbasic
 
-Subset of BBC-Basic
+Subset of BBC-Basic.
 
 ## bbcli
 
@@ -41,9 +41,10 @@ will produce
 Hello, World!
 ```
 
-## Ideas
+## Ideas/Todos
 
-* Transpile bbasic to wasm
+* Expand featureset of bbbasic
+* Transpile bbbasic to wasm
 
 ## License
 
