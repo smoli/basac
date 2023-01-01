@@ -14,7 +14,7 @@ NEXT i
 ";
 
     let r = parser::Program::parse(inp).expect("Parse failed");
-    r.execute(&mut out);
+    r.execute(&mut out).expect("Execution failed");
 
     assert_eq!(out.stringify(), exp.stringify());
 
@@ -30,7 +30,7 @@ NEXT i
 ";
 
     let r = parser::Program::parse(inp).expect("Parse failed");
-    r.execute(&mut out);
+    r.execute(&mut out).expect("Execution failed");
 
     assert_eq!(out.stringify(), exp.stringify());
 
@@ -46,7 +46,7 @@ NEXT i
 ";
 
     let r = parser::Program::parse(inp).expect("Parse failed");
-    r.execute(&mut out);
+    r.execute(&mut out).expect("Execution failed");
 
     assert_eq!(out.stringify(), exp.stringify());
 

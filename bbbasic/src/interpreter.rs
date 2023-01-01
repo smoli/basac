@@ -2,7 +2,7 @@ use std::io::Write;
 use crate::bool_expression::ComputeBool;
 use crate::error::InterpreterError;
 use crate::expression::Compute;
-use crate::parser::{Assignment, Assignment_value, Block, ElseBlock, ForStatement, IfStatement, PrintListItem_value, PrintStatement, Program, Statement};
+use crate::parser::{Assignment, Assignment_value, Block, ForStatement, IfStatement, PrintListItem_value, PrintStatement, Program, Statement};
 
 use crate::scope::Scope;
 use crate::value::Value;
@@ -112,9 +112,9 @@ impl Execute for IfStatement {
         let c = self.condition.compute_bool(scope)?.as_bool()?;
 
         if c == true {
-            self.thenBlock.execute_stdout(scope, stdout)
+            self.then_block.execute_stdout(scope, stdout)
         } else {
-            match &self.elseBlock {
+            match &self.else_block {
                 None => Ok(ExecutionResult::Ok),
                 Some(e) => e.execute_stdout(scope, stdout)
             }
