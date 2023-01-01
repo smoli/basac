@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::error::InterpreterError;
 use crate::value::Value;
 
 #[derive(Debug)]
@@ -16,7 +17,10 @@ impl Scope {
         self.values.insert(name.clone(), value);
     }
 
-    pub fn get(&self, name: &String) -> Option<&Value> {
-        self.values.get(name)
+    pub fn get(&self, name: &String) -> Result<&Value, InterpreterError> {
+        match self.values.get(name) {
+            None => Err(InterpreterError::UnknownVariable),
+            Some(v) => Ok(v)
+        }
     }
 }

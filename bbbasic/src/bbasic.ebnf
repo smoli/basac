@@ -3,7 +3,7 @@ Program = body:Block $;
 
 Block = {statements:Statement {NewLine} } [statements:Statement];
 
-Statement = ( @:IfStatement | @:ForStatement | @:PrintStatement | @:EndStatement | @:Assignment  );
+Statement = ( @:ExitForStatement | @:IfStatement | @:ForStatement | @:PrintStatement | @:EndStatement | @:Assignment  );
 
 NewLine = "\n";
 
@@ -61,6 +61,7 @@ ForStatement = KWFor assignment:Assignment KWTo target:Expression [step:ForStep]
 #ForStatement = KWFor assignment:Assignment KWTo target:Expression;
 ForStep = KWStep value:Expression;
 ForNext = KWNext [Variable];
+ExitForStatement = KWExit KWFor;
 
 
 # END
@@ -77,6 +78,7 @@ KWIf = 'IF';
 KWThen = 'THEN';
 KWElse = 'ELSE';
 KWEndif = 'ENDIF';
+KWExit = "EXIT";
 
 # Variable
 Variable = name:VariableName;

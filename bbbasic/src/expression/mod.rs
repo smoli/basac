@@ -20,8 +20,8 @@ impl Compute for NumberLiteral {
 impl Compute for Variable {
     fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
         match scope.get(&self.name) {
-            None => Err(InterpreterError::UnknownVariable),
-            Some(v) => Ok(v.clone())
+            Ok(v) => Ok(v.clone()),
+            Err(e) => Err(e)
         }
     }
 }

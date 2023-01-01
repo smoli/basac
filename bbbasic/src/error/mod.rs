@@ -3,5 +3,6 @@ pub enum InterpreterError {
     NotImplemented,
     TypeMismatch,
     OperationUnsupported,
-    UnknownVariable
+    UnknownVariable,
+    StatementNotFound
 }
