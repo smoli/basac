@@ -1,5 +1,5 @@
-W = 80.0
-H = 20.0
+W = 800.0
+H = 200.0
 MW = 2.47
 MH = 2.24
 MAXIT = 10
@@ -27,6 +27,6 @@ FOR Py = 1 TO H
             PRINT ".";
         ENDIF
 
-    NEXT x
+    NEXT Px
     PRINT ""
-NEXT y
+NEXT Py
