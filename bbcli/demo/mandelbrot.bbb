@@ -45,7 +45,7 @@ FOR Py = 1 TO H
             PRINT "#";
         ENDIF
         IF iteration > 19 THEN
-            PRINT "#";
+            PRINT "@";
         ENDIF
 
     NEXT Px
