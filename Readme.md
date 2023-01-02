@@ -47,7 +47,7 @@ Executing
 $ bbcli demos\mandelbrot.bbb
 ```
 
-will produce
+will produce an ASCII-Version of the [Mandelbrot-Set](https://en.wikipedia.org/wiki/Mandelbrot_set)
 
 ```
                                                             ·············
