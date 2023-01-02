@@ -4,7 +4,7 @@ use crate::error::InterpreterError;
 use crate::expression::Compute;
 use crate::interpreter::ExecutionResult::Exit;
 use crate::interpreter::ExitReason::{For, While};
-use crate::parser::{Assignment, Assignment_value, Block, ForStatement, IfStatement, PrintListItem_value, PrintStatement, Program, Statement, WhileStatement};
+use crate::parser::{Assignment, Block, ForAssignment, ForStatement, IfStatement, NumericVariable, PrintListItem_value, PrintStatement, Program, Statement, StringAssignment, WhileStatement};
 
 use crate::scope::Scope;
 use crate::value::Value;
@@ -66,12 +66,29 @@ impl Execute for PrintStatement {
 
 impl Execute for Assignment {
     fn execute(&self, scope: &mut Scope) -> Result<ExecutionResult, InterpreterError> {
-        let v = match &self.value {
-            Assignment_value::Expression(e) => e.compute(scope)?,
-            Assignment_value::StringLiteral(s) => Value::String(s.body.clone())
-        };
+        let v = self.value.compute(scope)?;
 
         scope.set(&self.variable.name, v);
+
+        Ok(ExecutionResult::Ok)
+    }
+}
+
+impl Execute for ForAssignment {
+    fn execute(&self, scope: &mut Scope) -> Result<ExecutionResult, InterpreterError> {
+        let v = self.value.compute(scope)?;
+
+        scope.set(&self.variable.name, v);
+
+        Ok(ExecutionResult::Ok)
+    }
+}
+
+impl Execute for StringAssignment {
+    fn execute(&self, scope: &mut Scope) -> Result<ExecutionResult, InterpreterError> {
+        let v = self.value.body.to_string();
+
+        scope.set(&self.variable.name, Value::String(v));
 
         Ok(ExecutionResult::Ok)
     }
@@ -179,6 +196,7 @@ impl Execute for Statement {
             Statement::EndStatement(_) => Ok(ExecutionResult::Ok),
             Statement::PrintStatement(s) => s.execute_stdout(scope, stdout),
             Statement::Assignment(a) => a.execute(scope),
+            Statement::StringAssignment(a) => a.execute(scope),
             Statement::ForStatement(f) => f.execute_stdout(scope, stdout),
             Statement::IfStatement(i) => i.execute_stdout(scope, stdout),
             Statement::ExitForStatement(_) => Ok(Exit(For)),

@@ -1,5 +1,5 @@
 use crate::error::InterpreterError;
-use crate::parser::{Add, Div, Expression, Factor, Group, Mul, NumberLiteral, NumberLiteral_value, Sub, Term, Variable};
+use crate::parser::{Add, Div, Expression, Factor, Group, Mul, NumberLiteral, NumberLiteral_value, NumericVariable, Sub, Term};
 use crate::scope::Scope;
 use crate::value::Value;
 
@@ -17,7 +17,7 @@ impl Compute for NumberLiteral {
     }
 }
 
-impl Compute for Variable {
+impl Compute for NumericVariable {
     fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
         match scope.get(&self.name) {
             Ok(v) => Ok(v.clone()),
@@ -25,6 +25,7 @@ impl Compute for Variable {
         }
     }
 }
+
 
 impl Compute for Add {
     fn compute(&self, scope: &mut Scope) -> Result<Value, InterpreterError> {
@@ -56,7 +57,7 @@ impl Compute for Factor {
         match self {
             Factor::Group(g) => g.compute(scope),
             Factor::NumberLiteral(n) => n.compute(scope),
-            Factor::Variable(v) => v.compute(scope)
+            Factor::NumericVariable(v) => v.compute(scope)
         }
     }
 }

@@ -142,7 +142,7 @@ fn print_multiple_types() {
 fn print_a_string_variable() {
     let (mut out, exp) = common::make_buffer("Hello, World!\n");
     let inp =
-"x = \"World\"
+"x$ = \"World\"
 PRINT \"Hello, \";x;\"!\"";
 
     let r = parser::Program::parse(inp).expect("Parse failed");
@@ -150,5 +150,4 @@ PRINT \"Hello, \";x;\"!\"";
     r.execute(&mut out).expect("Execution failed");
 
     assert_eq!(out.stringify(), exp.stringify());
-
 }

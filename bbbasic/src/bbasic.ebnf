@@ -3,7 +3,7 @@ Program = body:Block $;
 
 Block = {statements:Statement {NewLine} } [statements:Statement];
 
-Statement = ( @:ExitWhileStatement | @:WhileStatement | @:ExitForStatement | @:IfStatement | @:ForStatement | @:PrintStatement | @:EndStatement | @:Assignment  );
+Statement = ( @:ExitWhileStatement | @:WhileStatement | @:ExitForStatement | @:IfStatement | @:ForStatement | @:PrintStatement | @:EndStatement | @:Assignment | @:StringAssignment );
 
 NewLine = "\n" | "\r\n";
 
@@ -19,7 +19,7 @@ Term = @:Mul | @:Div | @:Factor;
 Mul = left:*Term '*' right:Factor;
 Div = left:*Term '/' right:Factor;
 @memoize
-Factor = @:Group | @:NumberLiteral | @:Variable;
+Factor = @:Group | @:NumberLiteral | @:NumericVariable;
 Group = '(' body:*Expression ')';
 
 
@@ -52,7 +52,8 @@ WhileCondition = @:BoolDisjunction;
 ExitWhileStatement = KWExit KWWhile;
 
 # ASSIGNMENT
-Assignment = variable:Variable "=" ( value:Expression | value:StringLiteral );
+Assignment = variable:NumericVariable "=" value:Expression;
+StringAssignment = variable:StringVariable "=" value:StringLiteral;
 
 # PRINT
 PrintStatement = KWPrint { list:PrintListItem };
@@ -61,10 +62,11 @@ PrintListItem = (value:Expression | value:StringLiteral) [sep:PrintListSep];
 PrintListSep = ";";
 
 # FOR
-ForStatement = KWFor assignment:Assignment KWTo target:Expression [step:ForStep] NewLine body:Block next:ForNext;
+ForAssignment = variable:NumericVariable '=' value:Expression;
+ForStatement = KWFor assignment:ForAssignment KWTo target:Expression [step:ForStep] NewLine body:Block next:ForNext;
 #ForStatement = KWFor assignment:Assignment KWTo target:Expression;
 ForStep = KWStep value:Expression;
-ForNext = KWNext [Variable];
+ForNext = KWNext [NumericVariable];
 ExitForStatement = KWExit KWFor;
 
 
@@ -87,11 +89,16 @@ KWWhile = "WHILE";
 KWEndwhile = "ENDWHILE";
 
 # Variable
-Variable = name:VariableName;
+NumericVariable = name:VariableName (float:FloatDenominator | int:IntegerDenominator | byte:ByteDenominator | string:StringDenominator);
+FloatDenominator = ['#'];
+IntegerDenominator = ['%'];
+ByteDenominator = ['&'];
+StringDenominator = ['$'];
+StringVariable = name:VariableName '$';
 
 @no_skip_ws
 @string
-VariableName = ( >ALPHA | "_" | "`" ) { >ALPHA | >DIGIT | "_" | "%" | "$" };
+VariableName = ( >ALPHA | "_" | "`" ) { >ALPHA | >DIGIT | "_" };
 
 # LITERALS
 NumberSign = '+' | '-';
