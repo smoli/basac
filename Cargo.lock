@@ -15,14 +15,14 @@ dependencies = [
 
 [[package]]
 name = "bbbasic"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "peginator",
 ]
 
 [[package]]
 name = "bbbcli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bbbasic",
  "clap",

@@ -1,6 +1,5 @@
 use std::fs;
 use std::time::Instant;
-use clap::builder::Str;
 use bbbasic;
 use clap::Parser as Clapper;
 
@@ -38,7 +37,7 @@ fn benchmark(filename: &String, count: u32) {
             println!("Avg. single exec:\t{:.2?}", elapsed / count);
 
         }
-        Err(e) => {
+        Err(_) => {
             eprintln!("File not found: {}", filename);
         }
     }
@@ -49,7 +48,7 @@ fn run(filename: &String) {
         Ok(code) => {
             bbbasic::execute(code.as_str());
         }
-        Err(e) => {
+        Err(_) => {
             eprintln!("File not found: {}", filename);
         }
     }
