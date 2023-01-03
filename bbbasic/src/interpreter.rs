@@ -1,12 +1,15 @@
 use std::io::Write;
+use std::str::FromStr;
 use crate::bool_expression::ComputeBool;
 use crate::error::InterpreterError;
+use crate::error::InterpreterError::NotImplemented;
 use crate::expression::Compute;
 use crate::interpreter::ExecutionResult::Exit;
 use crate::interpreter::ExitReason::{For, While};
-use crate::parser::{Assignment, Block, ForAssignment, ForStatement, IfStatement, NumericVariable, PrintListItem_value, PrintStatement, Program, Statement, StringAssignment, WhileStatement};
+use crate::parser::{Assignment, Block, ForAssignment, ForStatement, ForStep, IfStatement, NumericVariable, NumericVariable_type_dem, PrintListItem_value, PrintStatement, Program, Statement, StringAssignment, WhileStatement};
+use crate::parser::BoolOperand::Expression;
 
-use crate::scope::Scope;
+use crate::scope::{Byte, DataTypeQuery, Float, Integer, One, Scope, ScopeValue};
 use crate::value::Value;
 
 #[derive(Clone, Copy)]
@@ -49,9 +52,12 @@ impl Execute for PrintStatement {
                         Value::Integer(i) => stdout.write_all(format!("{}", i).as_bytes()).unwrap(),
                         Value::Float(f) => stdout.write_all(format!("{}", f).as_bytes()).unwrap(),
                         Value::Boolean(b) => stdout.write_all(format!("{}", b).as_bytes()).unwrap(),
+                        _ => {}
                     }
                 }
-                PrintListItem_value::StringLiteral(s) => stdout.write_all(s.body.as_bytes()).unwrap()
+
+                PrintListItem_value::StringLiteral(s) => stdout.write_all(s.body.as_bytes()).unwrap(),
+                PrintListItem_value::StringVariable(s) => stdout.write_all(scope.get_string(&s.name)?.as_bytes()).unwrap()
             };
 
             match item.sep {
@@ -66,9 +72,26 @@ impl Execute for PrintStatement {
 
 impl Execute for Assignment {
     fn execute(&self, scope: &mut Scope) -> Result<ExecutionResult, InterpreterError> {
-        let v = self.value.compute(scope)?;
-
-        scope.set(&self.variable.name, v);
+        match &self.variable.type_dem {
+            None => {
+                let v = self.value.compute_float(scope)?;
+                scope.set_float(&self.variable.name, v);
+            }
+            Some(d) => match d {
+                NumericVariable_type_dem::ByteDenominator(_) => {
+                    let v = self.value.compute_byte(scope)?;
+                    scope.set_byte(&self.variable.name, v);
+                }
+                NumericVariable_type_dem::FloatDenominator(_) => {
+                    let v = self.value.compute_float(scope)?;
+                    scope.set_float(&self.variable.name, v);
+                }
+                NumericVariable_type_dem::IntegerDenominator(_) => {
+                    let v = self.value.compute_integer(scope)?;
+                    scope.set_int(&self.variable.name, v);
+                }
+            }
+        }
 
         Ok(ExecutionResult::Ok)
     }
@@ -76,9 +99,26 @@ impl Execute for Assignment {
 
 impl Execute for ForAssignment {
     fn execute(&self, scope: &mut Scope) -> Result<ExecutionResult, InterpreterError> {
-        let v = self.value.compute(scope)?;
-
-        scope.set(&self.variable.name, v);
+        match &self.variable.type_dem {
+            None => {
+                let v = self.value.compute_float(scope)?;
+                scope.set_float(&self.variable.name, v);
+            }
+            Some(d) => match d {
+                NumericVariable_type_dem::ByteDenominator(_) => {
+                    let v = self.value.compute_byte(scope)?;
+                    scope.set_byte(&self.variable.name, v);
+                }
+                NumericVariable_type_dem::FloatDenominator(_) => {
+                    let v = self.value.compute_float(scope)?;
+                    scope.set_float(&self.variable.name, v);
+                }
+                NumericVariable_type_dem::IntegerDenominator(_) => {
+                    let v = self.value.compute_integer(scope)?;
+                    scope.set_int(&self.variable.name, v);
+                }
+            }
+        }
 
         Ok(ExecutionResult::Ok)
     }
@@ -88,7 +128,7 @@ impl Execute for StringAssignment {
     fn execute(&self, scope: &mut Scope) -> Result<ExecutionResult, InterpreterError> {
         let v = self.value.body.to_string();
 
-        scope.set(&self.variable.name, Value::String(v));
+        scope.set_string(&self.variable.name, v);
 
         Ok(ExecutionResult::Ok)
     }
@@ -96,17 +136,33 @@ impl Execute for StringAssignment {
 
 impl Execute for ForStatement {
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) -> Result<ExecutionResult, InterpreterError> {
+
         self.assignment.execute(scope)?;
 
-        let step = match &self.step {
-            None => Value::Integer(1),
-            Some(f) => f.value.compute(scope)?
+        match &self.assignment.variable.type_dem {
+            None => self.do_loop_float(scope, stdout),
+
+            Some(d) => match d {
+                // NumericVariable_type_dem::ByteDenominator(_) => self.do_loop::<Byte>(scope, stdout),
+                NumericVariable_type_dem::FloatDenominator(_) => self.do_loop_float(scope, stdout),
+                NumericVariable_type_dem::IntegerDenominator(_) => self.do_loop_integer(scope, stdout),
+                _ => Err(NotImplemented("Loops for other than integers and floats".to_string()))
+            }
+        }
+    }
+}
+
+impl ForStatement {
+    fn do_loop_integer(&self, scope: &mut Scope, stdout: &mut impl Write)
+                       -> Result<ExecutionResult, InterpreterError> {
+        let target = self.target.compute_integer(scope)?;
+        let step: Integer = match &self.step {
+            Some(s) => s.value.compute_integer(scope)?,
+            None => 1,
         };
 
-        let target = self.target.compute(scope)?;
-
         loop {
-            match self.iterate(&target, &step, scope, stdout)? {
+            match self.iterate_integer(target, step, scope, stdout)? {
                 ExecutionResult::Ok => {}
 
                 ExecutionResult::ForCompleted => {
@@ -122,24 +178,77 @@ impl Execute for ForStatement {
             }
         }
     }
-}
 
-impl ForStatement {
-    fn iterate(&self, target: &Value, step: &Value, scope: &mut Scope, stdout: &mut impl Write)
-               -> Result<ExecutionResult, InterpreterError> {
+    fn do_loop_float(&self, scope: &mut Scope, stdout: &mut impl Write)
+                       -> Result<ExecutionResult, InterpreterError> {
+        let target = self.target.compute_float(scope)?;
+        let step: Float = match &self.step {
+            Some(s) => s.value.compute_float(scope)?,
+            None => 1.0,
+        };
+
+        loop {
+            match self.iterate_float(target, step, scope, stdout)? {
+                ExecutionResult::Ok => {}
+
+                ExecutionResult::ForCompleted => {
+                    return Ok(ExecutionResult::Ok);
+                }
+
+                Exit(ExitReason::For) => {
+                    return Ok(ExecutionResult::Ok);
+                }
+                Exit(ExitReason::While) => {
+                    return Ok(Exit(While));
+                }
+            }
+        }
+    }
+
+    fn iterate_integer(&self, target: Integer, step: Integer, scope: &mut Scope, stdout: &mut impl Write)
+                       -> Result<ExecutionResult, InterpreterError> {
         let result = self.body.execute_stdout(scope, stdout)?;
+
 
         match result {
             ExecutionResult::Ok => {
-                let curr = scope.get(&self.assignment.variable.name)?;
+                let curr = scope.get_int(&self.assignment.variable.name)?;
 
-                let next = curr.add(step)?;
+                let next = curr + step;
 
-                if next.gt(target).unwrap() {
+                if next > target {
                     return Ok(ExecutionResult::ForCompleted);
                 }
 
-                scope.set(&self.assignment.variable.name, next.clone());
+                scope.set_int(&self.assignment.variable.name, next.clone());
+
+                Ok(ExecutionResult::Ok)
+            }
+
+            Exit(reason) => {
+                Ok(Exit(reason))
+            }
+
+            ExecutionResult::ForCompleted => Err(InterpreterError::OperationUnsupported)
+        }
+    }
+
+    fn iterate_float(&self, target: Float, step: Float, scope: &mut Scope, stdout: &mut impl Write)
+                       -> Result<ExecutionResult, InterpreterError> {
+        let result = self.body.execute_stdout(scope, stdout)?;
+
+
+        match result {
+            ExecutionResult::Ok => {
+                let curr = scope.get_float(&self.assignment.variable.name)?;
+
+                let next = curr + step;
+
+                if next > target {
+                    return Ok(ExecutionResult::ForCompleted);
+                }
+
+                scope.set_float(&self.assignment.variable.name, next.clone());
 
                 Ok(ExecutionResult::Ok)
             }

@@ -31,7 +31,7 @@ BoolConjunction = term:BoolTerm { "AND" term:BoolTerm };
 BoolTerm = ("(" expression:BoolExpression ")") | condition:BoolCondition;
 BoolCondition = left:BoolOperand op:BoolOperator right:BoolOperand;
 BoolOperator = @:BoolOpNotEqual | @:BoolOpEqual | @:BoolOpLowerEqual | @:BoolOpGreaterEqual | @:BoolOpLower | @:BoolOpGreater;
-BoolOperand = @:Expression | @:StringLiteral;
+BoolOperand = @:StringVariable | @:Expression | @:StringLiteral;
 BoolOpNotEqual = "<>";
 BoolOpEqual = "=";
 BoolOpLowerEqual = "<=";
@@ -58,7 +58,7 @@ StringAssignment = variable:StringVariable "=" value:StringLiteral;
 # PRINT
 PrintStatement = KWPrint { list:PrintListItem };
 PrintSkipNl = ";";
-PrintListItem = (value:Expression | value:StringLiteral) [sep:PrintListSep];
+PrintListItem = (value:StringVariable | value:Expression | value:StringLiteral) [sep:PrintListSep];
 PrintListSep = ";";
 
 # FOR
@@ -89,12 +89,12 @@ KWWhile = "WHILE";
 KWEndwhile = "ENDWHILE";
 
 # Variable
-NumericVariable = name:VariableName (float:FloatDenominator | int:IntegerDenominator | byte:ByteDenominator | string:StringDenominator);
-FloatDenominator = ['#'];
-IntegerDenominator = ['%'];
-ByteDenominator = ['&'];
-StringDenominator = ['$'];
-StringVariable = name:VariableName '$';
+NumericVariable = name:VariableName [( type_dem:FloatDenominator | type_dem:IntegerDenominator | type_dem:ByteDenominator)];
+FloatDenominator = '#';
+IntegerDenominator = '\u0025';
+ByteDenominator = '&';
+StringDenominator = '\u0024';
+StringVariable = name:VariableName StringDenominator;
 
 @no_skip_ws
 @string
@@ -104,13 +104,15 @@ VariableName = ( >ALPHA | "_" | "`" ) { >ALPHA | >DIGIT | "_" };
 NumberSign = '+' | '-';
 NumberLiteral = value:FloatLiteral | value:IntegerLiteral;
 
+IntegerLiteral = body:IntegerBody;
 @no_skip_ws
 @string
-IntegerLiteral = [NumberSign] {'0'..'9'}+;
+IntegerBody = [NumberSign] {'0'..'9'}+;
 
+FloatLiteral = body:FloatBody;
 @no_skip_ws
 @string
-FloatLiteral = [NumberSign] { >DIGIT }+ "." { >DIGIT} [ 'E' { >DIGIT }+ ];
+FloatBody = [NumberSign] { >DIGIT }+ "." { >DIGIT} [ 'E' { >DIGIT }+ ];
 
 @no_skip_ws
 StringLiteral = '"' body:StringBody '"';

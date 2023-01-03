@@ -143,7 +143,7 @@ fn print_a_string_variable() {
     let (mut out, exp) = common::make_buffer("Hello, World!\n");
     let inp =
 "x$ = \"World\"
-PRINT \"Hello, \";x;\"!\"";
+PRINT \"Hello, \";x$;\"!\"";
 
     let r = parser::Program::parse(inp).expect("Parse failed");
 

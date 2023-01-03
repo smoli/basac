@@ -13,38 +13,38 @@ FOR Py = 1 TO H
         y = 0.0
         x2 = 0.0
         y2 = 0.0
-        iteration = 0
+        iteration% = 0
 
-        WHILE x2 + y2 <= 4 AND iteration < MAXIT
+        WHILE x2 + y2 <= 4 AND iteration% < MAXIT
             y = 2 * x * y + y0
             x = x2 - y2 + x0
             x2 = x * x
             y2 = y * y
-            iteration = iteration + 1
+            iteration% = iteration% + 1
         ENDWHILE
 
-        IF iteration <= 3 THEN
+        IF iteration% <= 3 THEN
             PRINT " ";
         ENDIF
-        IF iteration > 3 AND iteration <= 6 THEN
+        IF iteration% > 3 AND iteration% <= 6 THEN
             PRINT "·";
         ENDIF
-        IF iteration > 6 AND iteration <= 7 THEN
+        IF iteration% > 6 AND iteration% <= 7 THEN
             PRINT "-";
         ENDIF
-        IF iteration > 7 AND iteration <= 12 THEN
+        IF iteration% > 7 AND iteration% <= 12 THEN
             PRINT "+";
         ENDIF
-        IF iteration > 12 AND iteration <= 15 THEN
+        IF iteration% > 12 AND iteration% <= 15 THEN
             PRINT "/";
         ENDIF
-        IF iteration > 15 AND iteration <= 18 THEN
+        IF iteration% > 15 AND iteration% <= 18 THEN
             PRINT "X";
         ENDIF
-        IF iteration > 18 AND iteration <= 19 THEN
+        IF iteration% > 18 AND iteration% <= 19 THEN
             PRINT "#";
         ENDIF
-        IF iteration > 19 THEN
+        IF iteration% > 19 THEN
             PRINT "@";
         ENDIF
 

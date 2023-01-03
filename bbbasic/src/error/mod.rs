@@ -1,8 +1,9 @@
 #[derive(Debug)]
 pub enum InterpreterError {
-    NotImplemented,
+    NotImplemented(String),
     TypeMismatch,
     OperationUnsupported,
-    UnknownVariable,
-    StatementNotFound
+    UnknownVariable(String),
+    StatementNotFound,
+    Unreachable
 }

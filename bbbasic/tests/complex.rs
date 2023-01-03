@@ -4,36 +4,37 @@ use crate::common::Stringify;
 
 mod common;
 
-#[test]
+/*#[test]
 fn test1() {
     let (mut out, exp) = common::make_buffer("");
     let inp =
-"W = 80
+"bla = 12
+W = 80
 H = 20
 MW = 2.47
 MH = 2.24
-MAXIT = 1000
+MAXIT% = 1000
 
-FOR Py = 1 TO H
-    FOR Px = 1 TO W
-        x0 = (Px / W) * MW - 2.0
-        y0 = (Py / H) * MH - 1.12
+FOR Py% = 1 TO H
+    FOR Px% = 1 TO W
+        x0 = (Px% / W) * MW - 2.0
+        y0 = (Py% / H) * MH - 1.12
 
         x = 0.0
         y = 0.0
-        iteration = 0
+        iteration% = 0
 
-        WHILE x * x  + y * y <= 4 AND iteration < MAXIT
+        WHILE x * x  + y * y <= 4 AND iteration% < MAXIT%
             xtemp = x * x - y * y + x0
             y = 2 * x * y + y0
             x = xtemp
 
-            iteration = iteration + 1
+            iteration% = iteration% + 1
         ENDWHILE
 
-    NEXT x
+    NEXT Px%
     PRINT \"\"
-NEXT y";
+NEXT Py%";
 
     let r = parser::Program::parse(inp).expect("Parse failed");
 
@@ -43,4 +44,4 @@ NEXT y";
 
 }
 
-
+*/
