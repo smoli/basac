@@ -1,3 +1,4 @@
+use std::f32::consts::E;
 use std::io::Write;
 use crate::bool_expression::ComputeBool;
 use crate::error::InterpreterError;
@@ -5,7 +6,7 @@ use crate::error::InterpreterError::NotImplemented;
 use crate::expression::Compute;
 use crate::interpreter::ExecutionResult::Exit;
 use crate::interpreter::ExitReason::{For, While};
-use crate::parser::{Assignment, Block, ForAssignment, ForStatement, IfStatement, NumericVariable_type_dem, PrintListItem_value, PrintStatement, Program, Statement, StringAssignment, WhileStatement};
+use crate::parser::{Assignment, Block, CaseStatement, CaseStatement_variable, ForAssignment, ForStatement, IfStatement, NumericVariable_type_dem, PrintListItem_value, PrintStatement, Program, Statement, StringAssignment, WhenValue, WhileStatement};
 
 use crate::scope::{Float, Integer, Scope};
 use crate::value::Value;
@@ -297,6 +298,56 @@ impl Execute for WhileStatement {
     }
 }
 
+impl Execute for CaseStatement {
+    fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) -> Result<ExecutionResult, InterpreterError> {
+        let value = match &self.variable {
+            CaseStatement_variable::NumericVariable(n) => scope.get(&n)?,
+            CaseStatement_variable::StringVariable(s) => Value::String(scope.get_string(&s.name)?.clone()),
+        };
+
+        println!("{:?}", value);
+
+        for wi in 0..self.whens.len() {
+           let when = self.whens.get(wi).unwrap();
+
+            for wi in 0..when.values.len() {
+                let w_value = when.values.get(wi).unwrap();
+
+                println!("{:?}", w_value);
+
+                match w_value {
+                    WhenValue::FloatLiteral(f) => {
+                        if value.eq(&Value::Float(f.body.parse().unwrap()))? {
+                            return execute_statements(&when.statements, scope, stdout)
+                        }
+                    }
+                    WhenValue::IntegerLiteral(_) => {}
+                    WhenValue::NumericVariable(_) => {}
+                    WhenValue::StringVariable(_) => {}
+                }
+            }
+        }
+
+
+        Ok(ExecutionResult::Ok)
+    }
+}
+
+fn execute_statements(statements: &Vec<Statement>, scope: &mut Scope, stdout: &mut impl Write)
+    -> Result<ExecutionResult, InterpreterError> {
+    for i in 0..statements.len() {
+        let statement = statements.get(i).unwrap();
+        let result = statement.execute_stdout(scope, stdout)?;
+
+        match result {
+            Exit(_) => return Ok(result.clone()),
+            _ => {}
+        };
+    }
+
+    Ok(ExecutionResult::Ok)
+}
+
 impl Execute for Statement {
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) -> Result<ExecutionResult, InterpreterError> {
         return match self {
@@ -308,7 +359,8 @@ impl Execute for Statement {
             Statement::IfStatement(i) => i.execute_stdout(scope, stdout),
             Statement::ExitForStatement(_) => Ok(Exit(For)),
             Statement::WhileStatement(w) => w.execute_stdout(scope, stdout),
-            Statement::ExitWhileStatement(_) => Ok(Exit(While))
+            Statement::ExitWhileStatement(_) => Ok(Exit(While)),
+            Statement::CaseStatement(c) => c.execute_stdout(scope, stdout)
         };
     }
 }
@@ -316,17 +368,7 @@ impl Execute for Statement {
 
 impl Execute for Block {
     fn execute_stdout(&self, scope: &mut Scope, stdout: &mut impl Write) -> Result<ExecutionResult, InterpreterError> {
-        for i in 0..self.statements.len() {
-            let statement = self.statements.get(i).unwrap();
-            let result = statement.execute_stdout(scope, stdout)?;
-
-            match result {
-                Exit(_) => return Ok(result.clone()),
-                _ => {}
-            };
-        }
-
-        Ok(ExecutionResult::Ok)
+        execute_statements(&self.statements, scope, stdout)
     }
 }
 

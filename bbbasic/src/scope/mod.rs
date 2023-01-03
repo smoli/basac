@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 use crate::error::InterpreterError;
+use crate::parser::{NumericVariable, NumericVariable_type_dem};
+use crate::value::Value;
 
 pub type Float = f64;
 pub type Integer = i64;
@@ -104,6 +106,18 @@ impl Scope {
         }
     }
 */
+
+    pub fn get(&self, variable: &NumericVariable) -> Result<Value, InterpreterError> {
+        match &variable.type_dem {
+            None => Ok(Value::Float(self.get_float(&variable.name)?)),
+            Some(t) => match t {
+                NumericVariable_type_dem::ByteDenominator(_) => Ok(Value::Byte(self.get_byte(&variable.name)?)),
+                NumericVariable_type_dem::FloatDenominator(_) => Ok(Value::Float(self.get_float(&variable.name)?)),
+                NumericVariable_type_dem::IntegerDenominator(_) => Ok(Value::Integer(self.get_int(&variable.name)?)),
+            }
+        }
+    }
+
     pub fn set_float(&mut self, name: &String, value: Float) {
         self.floats.insert(name.clone(), value);
     }

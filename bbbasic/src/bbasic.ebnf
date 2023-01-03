@@ -3,7 +3,20 @@ Program = body:Block $;
 
 Block = {statements:Statement {NewLine} } [statements:Statement];
 
-Statement = ( @:ExitWhileStatement | @:WhileStatement | @:ExitForStatement | @:IfStatement | @:ForStatement | @:PrintStatement | @:EndStatement | @:Assignment | @:StringAssignment );
+Statement = !StatementTerminator
+            ( @:CaseStatement
+            | @:ExitWhileStatement
+            | @:WhileStatement
+            | @:ExitForStatement
+            | @:IfStatement
+            | @:ForStatement
+            | @:PrintStatement
+            | @:EndStatement
+            | @:Assignment
+            | @:StringAssignment );
+
+StatementTerminator = KWWhen | KWEndcase | KWEndif | KWEndwhile;
+
 
 NewLine = "\n" | "\r\n";
 
@@ -46,6 +59,18 @@ IfCondition = @:BoolDisjunction;
 IfStatement = KWIf condition:IfCondition KWThen {NewLine}+ then_block:ThenBlock [{NewLine} KWElse {NewLine}+ else_block:ElseBlock] {NewLine} KWEndif;
 
 
+# CASE
+WhenValue = @:NumericVariable | @:StringVariable | @:FloatLiteral | @:IntegerLiteral;
+WhenItem =  &KWEndcase | KWWhen (values:WhenValue { "," values:WhenValue } ":" [NewLine] statements:Statement { { NewLine }+ statements:Statement });
+CaseStatement = KWCase ( variable:NumericVariable | variable:StringVariable ) KWOf {NewLine}+
+                whens: WhenItem
+                {
+                    {NewLine}+
+                    whens: WhenItem
+                 }
+
+                KWEndcase;
+
 # WHILE
 WhileStatement = KWWhile condition:WhileCondition {NewLine}+ body:Block {NewLine} KWEndwhile;
 WhileCondition = @:BoolDisjunction;
@@ -71,7 +96,8 @@ ExitForStatement = KWExit KWFor;
 
 
 # END
-EndStatement  = KWEnd NewLine;
+@memoize
+EndStatement  = KWEnd;
 
 # KEYWORDS
 KWPrint = 'PRINT';
@@ -87,6 +113,11 @@ KWEndif = 'ENDIF';
 KWExit = "EXIT";
 KWWhile = "WHILE";
 KWEndwhile = "ENDWHILE";
+KWCase = "CASE";
+KWEndcase = "ENDCASE";
+KWWhen = "WHEN";
+KWOf = "OF";
+KWOtherwise = "OTHERWISE";
 
 # Variable
 NumericVariable = name:VariableName [( type_dem:FloatDenominator | type_dem:IntegerDenominator | type_dem:ByteDenominator)];
