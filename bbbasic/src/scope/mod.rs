@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 use crate::error::InterpreterError;
-use crate::value::Value;
 
 pub type Float = f64;
 pub type Integer = i64;
@@ -149,6 +148,7 @@ impl Scope {
         }
     }
 
+    #[allow(dead_code)]
     pub fn is(&self, name: &String) -> Result<DataType, InterpreterError> {
         if self.floats.contains_key(name) {
             return Ok(DataType::Float)

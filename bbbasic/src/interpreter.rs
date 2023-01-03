@@ -1,15 +1,13 @@
 use std::io::Write;
-use std::str::FromStr;
 use crate::bool_expression::ComputeBool;
 use crate::error::InterpreterError;
 use crate::error::InterpreterError::NotImplemented;
 use crate::expression::Compute;
 use crate::interpreter::ExecutionResult::Exit;
 use crate::interpreter::ExitReason::{For, While};
-use crate::parser::{Assignment, Block, ForAssignment, ForStatement, ForStep, IfStatement, NumericVariable, NumericVariable_type_dem, PrintListItem_value, PrintStatement, Program, Statement, StringAssignment, WhileStatement};
-use crate::parser::BoolOperand::Expression;
+use crate::parser::{Assignment, Block, ForAssignment, ForStatement, IfStatement, NumericVariable_type_dem, PrintListItem_value, PrintStatement, Program, Statement, StringAssignment, WhileStatement};
 
-use crate::scope::{Byte, DataTypeQuery, Float, Integer, One, Scope, ScopeValue};
+use crate::scope::{Float, Integer, Scope};
 use crate::value::Value;
 
 #[derive(Clone, Copy)]

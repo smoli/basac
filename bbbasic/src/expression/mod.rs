@@ -1,9 +1,7 @@
-use std::process::Output;
-use std::str::FromStr;
 use crate::error::InterpreterError;
-use crate::error::InterpreterError::{NotImplemented, TypeMismatch};
-use crate::parser::{Add, ByteDenominator, Div, Expression, Factor, FloatLiteral, Group, IntegerLiteral, Mul, NumberLiteral, NumberLiteral_value, NumericVariable, NumericVariable_type_dem, Sub, Term};
-use crate::scope::{Byte, DataType, Float, Integer, One, Scope, ScopeValue};
+use crate::error::InterpreterError::NotImplemented;
+use crate::parser::{Expression, Factor, Group, NumberLiteral, NumberLiteral_value, NumericVariable, NumericVariable_type_dem, Term};
+use crate::scope::{Byte, DataType, Float, Integer, Scope};
 use crate::value::Value;
 
 pub trait Compute {
@@ -222,8 +220,8 @@ impl Compute for Term {
     }
 
     fn get_type(&self) -> DataType {
-        let mut l: u16;
-        let mut r: u16;
+        let l: u16;
+        let r: u16;
 
         match self {
             Term::Div(d) => {
@@ -293,8 +291,8 @@ impl Compute for Expression {
     }
 
     fn get_type(&self) -> DataType {
-        let mut l: u16;
-        let mut r: u16;
+        let l: u16;
+        let r: u16;
 
         match self {
             Expression::Add(d) => {

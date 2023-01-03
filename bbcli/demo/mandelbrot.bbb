@@ -9,7 +9,7 @@ FOR Py = 1 TO H
     FOR Px = 1 TO W
         x0 = (Px / W) * MW - 2.0
 
-        x = 0.0
+        x = 0.
         y = 0.0
         x2 = 0.0
         y2 = 0.0

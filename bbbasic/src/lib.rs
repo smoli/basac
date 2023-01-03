@@ -1,5 +1,4 @@
 extern crate peginator;
-use std::io::Write;
 
 pub mod parser;
 pub mod interpreter;
